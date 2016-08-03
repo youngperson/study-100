@@ -5,4 +5,33 @@ Linux version 3.10.0-327.13.1.el7.x86_64 (builder@kbuilder.dev.centos.org) (gcc 
 ps -ef | grep xxx
 杀掉进程，supervisor会再次把xxx进程重新启动。
 
-详细点击查看：https://github.com/youngperson/study-100/wiki/centos下安装supervisor
+应用
+监控进程，比如监控队列的消费进程。supervisor+redis实现的队列
+队列的消费伪代码
+set_time_limit(0);
+while (true) {
+    $len = $redis->llen($key);
+    if (!$len) {
+        sleep(3);
+    }
+
+    //消费完一条usleep几毫秒，别把服务器拖垮
+    $oneData = json_decode($redis->lPop($key), true);
+    $queueType = $oneData['queue_type'];
+    //app消息推送
+    $url = '';
+    if ($queueType == 1) {
+        $url = $appUrl.'?'.http_build_query($oneData);
+
+        //推送失败,记录到文件中去
+        if (!curlRequest($url)) {
+            //在重试2次
+            if (!curlRequest($url) && !curlRequest($url)) {
+                $this->addQueueLog($url, $basePath);
+            }
+        }
+    }
+    usleep(3);
+}
+
+详细访问：https://github.com/youngperson/study-100/wiki/centos下安装supervisor
