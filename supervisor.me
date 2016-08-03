@@ -1,0 +1,51 @@
+**centos下安装supervisor**
+
+**1.安装**
+
+    # yum install python-setuptools
+    # easy_install supervisor
+成功安装后可以登陆python控制台输入import supervisor 查看是否能成功加载。
+
+补充：如果easy_install不好使就从官方下载，然后通过python安装：
+
+    # tar zxf supervisor-xxxx.tar.gz 
+    # cd supervisor
+    # python setup.py install
+	
+	
+**2.创建配置文件(supervisord.conf）**
+
+使用root身份创建一个全局配置文件
+
+    #echo_supervisord_conf > /etc/supervisord.conf
+    #supervisord -c /etc/supervisord.conf
+	
+**3.修改配置文件(supervisord.conf）**
+如果修改了 /etc/supervisord.conf ,需要执行 #supervisorctl reload 来重新加载配置文件，否则不会生效
+
+    supervisord 是启动supervisor 
+    supervisorctl 是控制supervisord
+
+打开supervisord.conf 的 [include] 引入 files的配置.
+
+     [include] 
+     files = /usr/local/share/supervisor/*.conf
+在supervisor建立一个你想守护的进程的文件名, redisQueue.conf
+
+    #cd  /usr/local/share/supervisor/
+    #vi redisQueue.conf
+新增如下内容
+            [program:redisQueue]
+            command=php  /tmp/wrl/consumerQueue.php
+            user =root
+            autostart=true
+            autorestart=true
+            startsecs=3
+            stdout_logfile=/usr/local/share/supervisor/redisQueue.log
+    #supervisorctl reload 
+说明：command=后面跟着就是你要守护的shell.
+
+**4.运行命令**
+
+    supervisorctl status
+    supervisorctl help
