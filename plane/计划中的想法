@@ -18,6 +18,6 @@ python的继续学习
 
 
 补充：
-并发  并行   单线程   单进程   多线程   多进程    锁(自旋锁、死锁、悲观锁、乐观锁)    协程   阻塞、非阻塞   minhash  simhash  单元测试(yii2)
+并发  并行   单线程   单进程   多线程   多进程  异步   同步   锁(自旋锁、死锁、悲观锁、乐观锁)    协程   阻塞、非阻塞   minhash  simhash  单元测试(yii2)
 http://mp.weixin.qq.com/s?__biz=MzAwMDU1MTE1OQ==&mid=403619448&idx=1&sn=df29fcbeb5a229b98379b86b162d916c&mpshare=1&scene=1&srcid=1010x5DH4HifEtkneIH0f3ss#rd
 https://laravel-china.org/index.php/topics/384
