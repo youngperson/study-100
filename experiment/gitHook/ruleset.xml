@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<ruleset name="demo Standard">
+
+    <arg name="report" value="json"/>
+
+    <rule ref="PSR2">
+
+        <!--类左大括号不换行-->
+        <!--<exclude name="PSR2.Classes.ClassDeclaration.OpenBraceNewLine"/>-->
+
+        <!--函数左大括号不换行-->
+        <!--<exclude name="Squiz.Functions.MultiLineFunctionDeclaration.BraceOnSameLine"/>-->
+
+        <!--不需要命名空间-->
+        <!--<exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>-->
+
+        <!--去除行数宽度限制-->
+        <!--<exclude name="Generic.Files.LineLength.TooLong"/>-->
+
+        <!--去除类的驼峰命名限制-->
+        <!--<exclude name="Squiz.Classes.ValidClassName.NotCamelCaps"/>-->
+
+        <!--去除文件结尾的空行限制-->
+        <!--<exclude name="PSR2.Files.EndFileNewline.NoneFound"/>-->
+
+    </rule>
+
+</ruleset>
