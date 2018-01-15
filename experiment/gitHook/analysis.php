@@ -13,6 +13,7 @@ class cliServer extends commonServer {
     protected $url;
     protected $root;
     protected $project;
+    protected $sslUrl;
     protected $branch;
     protected $username;
     protected $targetBranch;
@@ -41,6 +42,7 @@ class cliServer extends commonServer {
 
             try {
                 $this->setParams($iid);
+                $this->deploy();
                 $this->fetch();
                 $this->getModifyFiles();
                 $this->getDiffs();
@@ -97,16 +99,34 @@ class cliServer extends commonServer {
     }
 
     /**
-     * 拉代码,检测待检测分支是否存在
-     * @throws \Exception
+     * 检测文件是否存在,不存在就去clone下来
      */
-    public function fetch() {
+    public function deploy() {
         //1.需要提前在钩子代码的平级目录先clone一份下来，因为防止chdir的时候找不到目录
         //2.或者是这个方法中发现没有，先克隆下来
         //项目的代码可以在任何的服务器上,钩子代码在钩子服务器上会去拉取待检测项目代码
         $path = $this->root . '/../' . $this->project;
-        chdir($path);
         file_put_contents(self::DEBUG_LOG, "代码拉取到的目录路径{$path}\n", 8);
+
+        if (file_exists($path)) {
+            chdir($path);
+            if (strpos(shell_exec('git status'), 'fatal:') === false) {
+                return ;
+            }
+
+            @unlink($path);
+        }
+
+        chdir($this->root . '/../');
+        shell_exec("git clone {$this->sslUrl}");
+        chdir($path);
+    }
+
+    /**
+     * 拉代码,检测待检测分支是否存在
+     * @throws \Exception
+     */
+    public function fetch() {
         //从远端拉取代码
         shell_exec('git fetch origin -p > /dev/null 2>&1');
 

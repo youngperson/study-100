@@ -36,7 +36,7 @@ class collectData extends commonServer {
                 'targetBranch' => $post['object_attributes']['target_branch'],
                 'username'     => $post['user']['username'],
                 'url'          => $post['object_attributes']['url'],
-                'root'         => self::ROOT_PATH
+                'sslUrl'       => $post['project']['git_ssh_url']
             ];
 
             //判断合并的目标分支是不是master
