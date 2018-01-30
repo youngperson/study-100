@@ -1,0 +1,21 @@
+bigdesk和前面两个的作用不太一样，
+主要用来将
+_cluster/stats，_cluster/health， _cluster/state/nodes,routing_table,routing_nodes几个API的几个可视化展示出来，
+包括CPU/内存/Indices/Thread Pools/OS & JVM & Process & Transport，这个版本支持5.x系列
+
+
+
+git clone https://github.com/hlstudio/bigdesk
+
+
+直接用Python创建一个简单web服务器都可以运行
+nohup python -m SimpleHTTPServer &
+
+默认启动在8000端口，如果你的防火墙阻止了8000端口，还需要放开防火墙
+
+# Failed to load http://139.199.248.196:9200/_cluster/health: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+Origin 'http://139.199.248.196:8696' is therefore not allowed access.
+
+ElasticSearch配置文件，添加head需要的选项：
+http.cors.enabled: true
+http.cors.allow-origin: "*"

@@ -1,0 +1,25 @@
+安装新版本logstash，运行的时候报错Could not find logstash.yml
+mkdir -p /usr/share/logstash/config/
+chown -R logstash:logstash /usr/share/logstash/config/
+chown -R logstash:logstash /etc/logstash/
+ln -s /etc/logstash/* /usr/share/logstash/config
+
+
+# 如果启动报错,务必保证*.conf的数据是严格的安装缩进的
+
+# logstash agent端用的2.x版本   ELK的服务器端用的6.x版本
+
+# 如果两台机器之间是无法相互调用访问的,这个时候不能收集到数据
+:message=>”Failed to send event to Redis”
+目标机器IP 10.26.97.8
+ELK机器   10.111.11.120
+kafka机器 10.111.11.122 10.111.11.123
+
+
+
+/usr/share/logstash/bin/logstash -f /etc/logstash/services/api_log.conf &
+/usr/share/logstash/bin/logstash -f /etc/logstash/services/api_request.conf --path.data /var/log/logstash2 &
+/usr/share/logstash/bin/logstash -f /etc/logstash/services/server.conf --path.data /var/log/logstash3 &
+
+
+

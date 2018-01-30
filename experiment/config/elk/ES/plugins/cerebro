@@ -1,0 +1,19 @@
+cerebro提供的功能和head差不多，但是UI设计要好一些，直接到这里下载二进制
+https://github.com/lmenezes/cerebro/releases
+
+Java环境（要求至少JAVA 1.8）
+
+下载tgz包
+wget https://github.com/lmenezes/cerebro/releases/download/v0.7.2/cerebro-0.7.2.tgz
+
+tar zxvf cerebro-0.7.2.tgz
+
+进入到解压的目录运行服务
+nohup ./bin/cerebro &
+
+访问ip:9000端口即可(内网搭建的插件需要用能被访问的机器做个Nginx反向代理)
+
+
+
+
+

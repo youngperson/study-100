@@ -1,0 +1,19 @@
+Kafka-php
+    https://github.com/weiboad/kafka-php/blob/master/README_CH.md
+
+    使用 PHP 语言编写所以不用编译任何的扩展就可以使用，降低了接入与维护成本
+
+
+rdkafka
+
+    # 依赖
+    https://github.com/arnaud-lb/php-rdkafka/issues/38
+
+    # 安装
+    https://arnaud-lb.github.io/php-rdkafka/phpdoc/rdkafka.installation.manual.html
+
+    C语言写的PHP扩展，需要先安装扩展，再去使用
+
+
+
+生产环境建议使用rdkafka,360也在用这个

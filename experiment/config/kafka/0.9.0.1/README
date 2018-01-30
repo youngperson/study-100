@@ -1,0 +1,39 @@
+两台机zk器集群
+#10.111.11.120:2181
+10.111.11.122:2182
+10.111.11.123:2183
+
+两台机器的kafka集群
+#10.111.11.120:9092
+10.111.11.122:9092
+10.111.11.123:9092
+
+
+给每台机器创建好目录,不然启动zk就报错
+/data/zookeeper/data/2/myid file is missing
+
+dataDir=/data/zookeeper/data/1
+dataLogDir=/data/zookeeper/log/1
+mkdir -p /data/zookeeper/data/1
+mkdir -p /data/zookeeper/log/1
+echo 1 > /data/zookeeper/data/1/myid
+echo 2 > /data/zookeeper/data/2/myid
+
+
+# kill
+ps -ef | grep zookeeper | awk '{print $2}' | xargs kill -9
+
+启动zk
+先停止  /opt/kafka/bin/zookeeper-server-stop.sh
+启动    /opt/kafka/bin/zookeeper-server-start.sh -daemon /opt/kafka/config/zookeeper.properties
+
+启动kafka
+先停止  /opt/kafka/bin/kafka-server-stop.sh
+启动    /opt/kafka/bin/kafka-server-start.sh -daemon /opt/kafka/config/server.properties
+
+
+
+
+
+注意：kafka不要和ELK机器放在同一台，会导致ES的性能下降很厉害(可能java共用缓存内存，不够用)
+32核 64G  挂载了2T的硬盘  只部署ELK

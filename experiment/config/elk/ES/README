@@ -1,0 +1,33 @@
+10.111.11.120
+
+注意：kafka不要和ELK机器放在同一台，会导致ES的性能下降很厉害(可能java共用缓存内存，不够用)
+这个机器是32核 64G  挂载了2T的硬盘  目前只部署ELK
+
+给ES启动的时候分配20G
+-Xms20g
+-Xmx20g
+
+接入全量的日志，QPS在500-1500，目前单机没问题
+
+
+默认ES的日志模式是调试的，修改log4j2.properties
+放在消费kafka的的数据因为debug模式全部刷到日志目录去
+status = error
+logger.action.level = error
+
+
+QA
+bootstrap.memory_lock: true打开后发现ES启动失败
+解决：
+    /etc/elasticsearch/elasticsearch.yml
+    bootstrap.memory_lock: true
+
+    /usr/lib/systemd/system/elasticsearch.service
+    LimitMEMLOCK=infinity
+
+    /etc/sysconfig/elasticsearch
+    MAX_LOCKED_MEMORY=unlimited
+
+    /etc/security/limits.conf
+    * soft memlock unlimited
+    * hard memlock unlimited

@@ -1,0 +1,177 @@
+# 检查 es 集群健康状态
+
+curl -XGET '47.97.194.220:8697/_cat/health'
+
+
+[
+    {
+        "epoch": "1516360141",
+        "timestamp": "19:09:01",
+        "cluster": "QscLog",
+        "status": "green",
+        "node.total": "3",
+        "node.data": "3",
+        "shards": "52",
+        "pri": "26",
+        "relo": "0",
+        "init": "0",
+        "unassign": "0",
+        "pending_tasks": "0",
+        "max_task_wait_time": "-",
+        "active_shards_percent": "100.0%"
+    }
+]
+
+status
+RED: Damnit. Some or all of (primary) shards are not ready.
+YELLOW: Elasticsearch has allocated all of the primary shards, but some/all of the replicas have not been allocated.
+GREEN: Great. Your cluster is fully operational. Elasticsearch is able to allocate all shards and replicas to machines within the cluster.
+
+
+# 获取集群中的节点列表
+
+curl -XGET '47.97.194.220:8697/_cat/nodes'
+
+
+[
+    {
+        "host": "10.111.11.123",
+        "ip": "10.111.11.123",
+        "heap.percent": "12",
+        "ram.percent": "98",
+        "load": "1.42",
+        "node.role": "d",
+        "master": "-",
+        "name": "logNode3"
+    }
+    ,
+    {
+        "host": "10.111.11.120",
+        "ip": "10.111.11.120",
+        "heap.percent": "16",
+        "ram.percent": "61",
+        "load": "2.27",
+        "node.role": "d",
+        "master": "*",
+        "name": "logNode1"
+    }
+    ,
+    {
+        "host": "10.111.11.122",
+        "ip": "10.111.11.122",
+        "heap.percent": "14",
+        "ram.percent": "97",
+        "load": "2.99",
+        "node.role": "d",
+        "master": "m",
+        "name": "logNode2"
+    }
+]
+
+# 获取索引
+
+curl -XGET '47.97.194.220:8697/_cat/indices'
+
+[
+    {
+        "health": "green",
+        "status": "open",
+        "index": "api_log_2018.01.19",
+        "pri": "5",
+        "rep": "1",
+        "docs.count": "4349181",
+        "docs.deleted": "0",
+        "store.size": "14.3gb",
+        "pri.store.size": "7.1gb"
+    }
+    ,
+    {
+        "health": "green",
+        "status": "open",
+        "index": "phpfpm_slow_log_2018.01.19",
+        "pri": "5",
+        "rep": "1",
+        "docs.count": "10091",
+        "docs.deleted": "0",
+        "store.size": "2.7mb",
+        "pri.store.size": "1.3mb"
+    }
+    ,
+    {
+        "health": "green",
+        "status": "open",
+        "index": ".kibana",
+        "pri": "1",
+        "rep": "1",
+        "docs.count": "6",
+        "docs.deleted": "0",
+        "store.size": "57.3kb",
+        "pri.store.size": "28.6kb"
+    }
+    ,
+    {
+        "health": "green",
+        "status": "open",
+        "index": "php_error_log_2018.01.19",
+        "pri": "5",
+        "rep": "1",
+        "docs.count": "3",
+        "docs.deleted": "0",
+        "store.size": "31.5kb",
+        "pri.store.size": "15.7kb"
+    }
+    ,
+    {
+        "health": "green",
+        "status": "open",
+        "index": "api_request_log_2018.01.19",
+        "pri": "5",
+        "rep": "1",
+        "docs.count": "2146",
+        "docs.deleted": "0",
+        "store.size": "18.9mb",
+        "pri.store.size": "9.4mb"
+    }
+    ,
+    {
+        "health": "green",
+        "status": "open",
+        "index": "nginx_error_log_2018.01.19",
+        "pri": "5",
+        "rep": "1",
+        "docs.count": "172",
+        "docs.deleted": "0",
+        "store.size": "537.9kb",
+        "pri.store.size": "263.5kb"
+    }
+]
+
+# 删除历史的索引数据
+
+curl  -XDELETE  http://10.111.11.120:9200/api_log_2018.01.22,nginx_error_log_2018.01.22
+
+
+# 动态的给索引加配置
+curl -XPUT 'http://10.111.11.120:9200/_all/_settings?preserve_existing=true' -d '{
+    "index.number_of_replicas" : "1",
+    "index.refresh_interval" : "3s",
+    "index.translog.durability" : "async",
+    "index.translog.flush_threshold_size" : "1024mb",
+    "index.routing.allocation.total_shards_per_node" : "2"
+}'
+
+在kibana中操作
+PUT _all/_settings?preserve_existing=true
+{
+    "index.number_of_replicas" : "1",
+    "index.refresh_interval" : "3s",
+    "index.translog.durability" : "async",
+    "index.translog.flush_threshold_size" : "1024mb",
+    "index.routing.allocation.total_shards_per_node" : "2"
+}
+
+
+
+
+http://www.cnblogs.com/Wddpct/p/6623191.html#1-%E6%A3%80%E6%9F%A5-es-%E9%9B%86%E7%BE%A4%E5%81%A5%E5%BA%B7%E7%8A%B6%E6%80%81
+#
