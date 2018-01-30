@@ -1,0 +1,33 @@
+git clone https://github.com/yahoo/kafka-manager.git
+cd /opt/kafka-manager
+./sbt clean dist
+
+编译打包之后，看最后的信息
+[info] Your package is ready in /opt/kafka-manager/target/universal/kafka-manager-1.3.3.16.zip
+
+cd /opt/kafka-manager/target/universal
+unzip kafka-manager-1.3.3.16.zip
+mv kafka-manager-1.3.3.16 /opt/
+cd /opt/kafka-manager-1.3.3.16/
+
+
+vim /opt/kafka-manager-1.3.3.16/conf/application.conf中将kafka-manager.zkhosts的值设置为你的zk地址
+如果zk是集群，这里填写多个zk地址
+kafka-manager.zkhosts="10.0.0.148:2181,10.0.0.125:2182"
+
+
+启动,指定配置文件位置和启动端口号，默认为9000
+kafka-manager 默认的端口是9000，可通过 -Dhttp.port，指定端口; -Dconfig.file=conf/application.conf指定配置文件:
+
+nohup /opt/kafka-manager-1.3.3.16/bin/kafka-manager -Dconfig.file=/opt/kafka-manager-1.3.3.16/conf/application.conf -Dhttp.port=9000 &
+
+
+
+
+
+# 遇到报错 java.io.IOException: Cannot run program "/bin/javac" (in directory "/opt/kafka-manager"): error=2, No such file or directory
+javac is not installed in the java version.
+
+java -version  1.8.0_161-b14
+yum search java | grep -i --color JDK
+yum install java-1.8.0-openjdk  java-1.8.0-openjdk-devel
