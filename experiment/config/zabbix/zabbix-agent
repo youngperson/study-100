@@ -1,0 +1,37 @@
+在需要监控的机器上面安装zabbix-agent
+
+官网
+https://www.zabbix.com/download
+
+# rpm -i http://repo.zabbix.com/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-2.el7.noarch.rpm
+
+# yum install zabbix-agent
+
+监控机器的状况，配置文件的IP指向zabbix-server的
+# vim /etc/zabbix/zabbix_agentd.conf
+
+
+#改下面这三个地方
+##zabbix_server的地址
+Server=10.111.11.120
+##跟上面一致就好了
+ServerActive=10.111.11.120
+##这个填写本机IP
+Hostname=10.111.11.79
+
+
+启动agent
+# systemctl start zabbix-agent
+
+
+
+回到server的界面中
+配置----主机----创建主机群组
+配置----主机----创建主机
+配置----主机----某一个具体的机器----选择自带的模板---映射到当前机器  就能继续该模板的全部监控项目
+
+
+个性化的创建监控-图形
+找到某个主机下面  选择创建监控项
+找到某个主机下面  选择创建图形   选择某个监控项去创建图形
+
