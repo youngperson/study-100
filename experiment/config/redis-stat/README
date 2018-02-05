@@ -1,10 +1,47 @@
 https://github.com/youngperson/study-100/wiki/redis-stat%E7%9B%91%E6%8E%A7%E5%B7%A5%E5%85%B7
+https://github.com/junegunn/redis-stat
 
 ruby安装
     下载
     解压
     ./configure
     make && make install
-    
 
-https://github.com/junegunn/redis-stat
+
+报错
+
+Traceback (most recent call last):
+	2: from ./redis-stat:4:in `<main>'
+	1: from /usr/local/lib/ruby/2.5.0/rubygems/core_ext/kernel_require.rb:59:in `require'
+/usr/local/lib/ruby/2.5.0/rubygems/core_ext/kernel_require.rb:59:in `require': cannot load such file -- redis-stat (LoadError)
+
+    # gem update --system
+    # yum install -y ruby-devel
+    # gem install redis-stat
+    # gem list
+
+运行
+
+    # cd
+    端口3001,链接Redis的IP是10.111.11.120 端口是 6379 设置每6秒执行一次
+    # nohup redis-stat 10.111.11.120:6379 --verbose --server=3001 6 &
+
+浏览器中访问
+    Nginx反向代理等配置
+    登录代理机器中,有提供可以被访问到的IP
+
+    # cd /etc/nginx/conf.d
+    # vim redis_stat_proxy.conf
+
+    server
+    {
+        listen 3001;
+        location / {
+            proxy_redirect off;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://10.111.11.120:3001;
+        }
+        access_log /var/log/nginx/redis_stat.log;
+    }
