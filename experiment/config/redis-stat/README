@@ -1,0 +1,10 @@
+https://github.com/youngperson/study-100/wiki/redis-stat%E7%9B%91%E6%8E%A7%E5%B7%A5%E5%85%B7
+
+ruby安装
+    下载
+    解压
+    ./configure
+    make && make install
+    
+
+https://github.com/junegunn/redis-stat

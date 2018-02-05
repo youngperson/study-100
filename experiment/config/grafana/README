@@ -1,0 +1,37 @@
+安装
+    wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-4.6.3-1.x86_64.rpm
+    yum localinstall grafana-4.6.3-1.x86_64.rpm
+
+配置
+    vim /etc/grafana/grafana.ini
+
+    data = /data/grafana
+    logs = /var/log/grafana
+    plugins = /data/grafana/plugins
+    admin_user = Admin
+    admin_password = grafana
+
+创建目录和赋予权限
+    mkdir -p /data/grafana/plugins
+    chown -R grafana:grafana /data/grafana
+
+启动
+    systemctl start grafana-server
+    systemctl status grafana-server
+
+Nginx配置
+    会默认使用grafana用户和组运行Granfa进程。默认会开启HTTP的3000端口。
+    启动服务之后直接直接在浏览器访问http://IP:3000就会出现如下界面，默认账号和用户名为admin/admin,可以修改配置文件
+
+
+
+
+图形界面-接入ES数据源
+    add data source
+    http://docs.grafana.org/features/datasources/elasticsearch/
+
+新建仪表盘
+    https://github.com/chenryn/ELKstack-guide-cn/blob/master/elasticsearch/other/grafana.md
+
+
+
