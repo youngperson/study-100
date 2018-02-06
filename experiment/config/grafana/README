@@ -30,8 +30,15 @@ Nginx配置
     add data source
     http://docs.grafana.org/features/datasources/elasticsearch/
 
+    HTTP SETTING
+    我们做了反向代理  选择直连方式  填代理的ip
+    通过浏览器的network可以看到 连接数据源是否成功
+
+    其中index name和kibana中的index保持一致   nginx_error_log_*，或者我们使用*把全部的索引都匹配到
+
 新建仪表盘
-    https://github.com/chenryn/ELKstack-guide-cn/blob/master/elasticsearch/other/grafana.md
+    左侧的悬浮按钮-->add panel --> 选择grafa图形
+    选择图形顶部的中间对它进行编辑 ---> eidt ---> 选择对应导入的数据源 ---> 操作Metric、和Group By
 
 
 
