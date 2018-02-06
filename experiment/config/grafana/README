@@ -40,5 +40,62 @@ Nginx配置
     左侧的悬浮按钮-->add panel --> 选择grafa图形
     选择图形顶部的中间对它进行编辑 ---> eidt ---> 选择对应导入的数据源 ---> 操作Metric、和Group By
 
+    选择官方提供的一些dashboard进行改造
+    下载---->导入dashboard
+    https://grafana.com/dashboards/4415/revisions
+    https://grafana.com/dashboards/2292
 
 
+# nginx access log format
+
+log_format main   '{"@timestamp":"$time_iso8601",'
+                        '"@source":"$server_addr",'
+                        '"hostname":"$hostname",'
+                        '"ip":"$http_x_forwarded_for",'
+                        '"client":"$remote_addr",'
+                        '"request_method":"$request_method",'
+                        '"scheme":"$scheme",'
+                        '"domain":"$server_name",'
+                        '"referer":"$http_referer",'
+                        '"request":"$request_uri",'
+                        '"args":"$args",'
+                        '"size":$body_bytes_sent,'
+                        '"status": $status,'
+                        '"responsetime":$request_time,'
+                        '"upstreamtime":"$upstream_response_time",'
+                        '"upstreamaddr":"$upstream_addr",'
+                        '"http_user_agent":"$http_user_agent",'
+                        '"https":"$https"'
+                        '}';
+
+# Logstash nginx_access.conf
+
+input {
+    file {
+        #这里根据自己日志命名使用正则匹配所有域名访问日志
+        path => [ "/usr/local/nginx/logs/*_access.log" ]
+        ignore_older => 0
+    codec => json
+    }
+}
+
+filter {
+    mutate {
+      convert => [ "status","integer" ]
+      convert => [ "size","integer" ]
+      convert => [ "upstreatime","float" ]
+      remove_field => "message"
+    }
+    geoip {
+        source => "ip"
+    }
+
+
+}
+output {
+    elasticsearch {
+        hosts => "127.0.0.1:9200"
+        index => "logstash-nginx-access-%{+YYYY.MM.dd}"
+    }
+#    stdout {codec => rubydebug}
+}
