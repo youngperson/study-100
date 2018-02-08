@@ -16,7 +16,7 @@ wget https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-
 unzip es-sql-site-standalone.zip -d es-sql-site
 
 # 启动
-cd site-server
+cd /opt/es-plugins/es-sql-site/site-server
 npm install express --save
 nohup node node-server.js &
 
