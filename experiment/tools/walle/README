@@ -1,3 +1,5 @@
+https://walle-web.io/docs/zh-cn/installation.html
+
 Walle 一个web部署系统工具，配置简单、功能完善、界面流畅、开箱即用！支持git、svn版本管理，支持各种web代码发布，PHP，Python，JAVA等代码的发布、回滚，可以通过web来一键完成。
 
 安装
@@ -57,14 +59,11 @@ server {
 	charset utf-8;
 
 	root "/www/sites/walle-web/web";
+	index index.php;
 
-	location / {
-		index index.php;
-
-		if (!-e $request_filename) {
-			rewrite ^(.*)$ /index.php last;
-		}
-	}
+    location / {
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
 
 	location ~ \.php$ {
 		fastcgi_pass 10.111.11.120:9099;
@@ -82,4 +81,5 @@ server {
 
 7、修改代码
 
-
+# vim /www/sites/walle-web/assets/AppAsset.php
+public $baseUrl = 'http://47.97.194.220:8099/';
