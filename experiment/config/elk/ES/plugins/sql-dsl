@@ -17,6 +17,7 @@ unzip es-sql-site-standalone.zip -d es-sql-site
 
 # 启动
 cd /opt/es-plugins/es-sql-site/site-server
+vim /opt/es-plugins/es-sql-site/site-server/site_configuration.json  监听端口改为8699
 npm install express --save
 nohup node node-server.js &
 
@@ -34,7 +35,7 @@ server
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_pass http://10.111.11.120:8080;
+        proxy_pass http://10.111.11.120:8699;
     }
     access_log /var/log/nginx/es-sql.log;
 }
@@ -49,4 +50,5 @@ server
 写MySQL查询方式，就能转换成ES的语法，这样我们就能在grafana中去写ES的查询代码了
 
 
-在kibana界面的Dev Tools里面输入：GET _sql?sql=SELECT * FROM nginx_error_log_2018.02.08
+在kibana界面的Dev Tools里面输入查询结果：GET /_sql?sql=SELECT count(host.keyword) as total FROM nginx_error_log_2018.02.08 group by host.keyword
+在kibana界面的Dev Tools里面输入转换语句：GET /_sql/_explain?sql=SELECT count(host.keyword) as total FROM nginx_error_log_2018.02.08 group by host.keyword
