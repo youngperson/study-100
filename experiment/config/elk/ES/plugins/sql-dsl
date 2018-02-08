@@ -53,7 +53,6 @@ https://github.com/foreverjs/forever
 
 # 设置Nginx代理之类
 在代理机器上面设置好了反向代理
-在最终的机器上也设置下Nginx的访问路径之类
 
 反向代理
 
@@ -71,7 +70,6 @@ server
 }
 
 
-10.111.11.120的Nginx设置指向/usr/share/elasticsearch/
 
 # 使用
 

@@ -1,0 +1,155 @@
+[root@qshz-analysis walle-web]# ./yii walle/setup
+create dir 创建目录...
+mkdiring dir: /tmp/walle/
+mkdiring dir: /www/sites/walle-web/runtime/ansible_hosts/
+mkdiring dir: /www/sites/walle-web/vendor/bower/jquery/dist
+set writable 设置可写权限...
+Setting writable: /www/sites/walle-web/runtime
+Setting writable: /www/sites/walle-web/web/assets
+Setting writable: /tmp/walle/
+Setting writable: /www/sites/walle-web/runtime/ansible_hosts/
+set executable 设置可执行权限...
+Setting executable: /www/sites/walle-web/yii
+update database 更新数据库: yii migrate/up ...
+Yii Migration Tool (based on Yii v2.0.7)
+
+Creating migration history table "migration"...Done.
+Total 17 new migrations to be applied:
+	m140328_144900_init
+	m150926_151034_init_user
+	m150927_061454_alter_conf_to_mysql
+	m150929_004629_change_record_action
+	m150929_034627_session_to_mysql
+	m150929_115951_project_user_group
+	m151005_001053_alter_conf_2_project
+	m151010_050344_group_user_admin
+	m151011_054352_task_need_more_long
+	m151012_135612_task_add_branch
+	m151014_115546_add_pre_release_task
+	m151018_032238_support_svn
+	m151027_063246_keep_version_num
+	m160307_082032_ansible
+	m160402_173643_add_post_release_delay
+	m160418_035413_user_status_migrate
+	m160420_015223_add_file_transmission_mode
+
+Apply the above migrations? (yes|no) [no]:y
+*** applying m140328_144900_init
+    > create table user ... done (time: 0.039s)
+    > create table conf ... done (time: 0.026s)
+    > create table task ... done (time: 0.038s)
+    > create table record ... done (time: 0.022s)
+*** applied m140328_144900_init (time: 0.132s)
+
+*** applying m150926_151034_init_user
+    > insert into {{%user}} ... done (time: 0.010s)
+    > insert into {{%user}} ... done (time: 0.003s)
+*** applied m150926_151034_init_user (time: 0.031s)
+
+*** applying m150927_061454_alter_conf_to_mysql
+    > drop column conf from table conf ... done (time: 0.045s)
+    > add column git_url string(200) DEFAULT "" COMMENT "git地址" to table conf ... done (time: 0.033s)
+    > add column deploy_from string(200) NOT NULL COMMENT "宿主机存放clone出来的文件" to table conf ... done (time: 0.040s)
+    > add column excludes string(500) DEFAULT "" COMMENT "要排除的文件" to table conf ... done (time: 0.056s)
+    > add column release_user string(50) NOT NULL COMMENT "目标机器用户" to table conf ... done (time: 0.041s)
+    > add column release_to string(200) NOT NULL COMMENT "目标机器的目录，相当于nginx的root，可直接web访问" to table conf ... done (time: 0.047s)
+    > add column release_library string(200) NOT NULL COMMENT "目标机器版本发布库" to table conf ... done (time: 0.047s)
+    > add column hosts string(500) NOT NULL COMMENT "目标机器列表" to table conf ... done (time: 0.047s)
+    > add column pre_deploy string(500) DEFAULT "" COMMENT "部署前置任务" to table conf ... done (time: 0.036s)
+    > add column post_deploy string(500) DEFAULT "" COMMENT "同步之前任务" to table conf ... done (time: 0.053s)
+    > add column post_release string(500) DEFAULT "" COMMENT "同步之后任务" to table conf ... done (time: 0.038s)
+    > add column git_type string(50) DEFAULT "branch" COMMENT "两种上线方式，分支、tag" to table conf ... done (time: 0.037s)
+    > add column audit smallint(1) DEFAULT 0 COMMENT "是否需要审核任务0不需要，1需要" to table conf ... done (time: 0.053s)
+    > drop column created_at from table conf ... done (time: 0.031s)
+    > add column created_at datetime COMMENT "创建时间" after audit to table conf ... done (time: 0.071s)
+    > add column updated_at datetime COMMENT "修改时间" to table conf ... done (time: 0.035s)
+    > drop column created_at from table task ... done (time: 0.043s)
+    > add column created_at datetime COMMENT "创建时间" to table task ... done (time: 0.032s)
+    > add column updated_at datetime COMMENT "修改时间" to table task ... done (time: 0.061s)
+*** applied m150927_061454_alter_conf_to_mysql (time: 0.852s)
+
+*** applying m150929_004629_change_record_action
+    > alter column action in table record to integer(3) unsigned DEFAULT 10 COMMENT "任务执行到的阶段" ... done (time: 0.046s)
+*** applied m150929_004629_change_record_action (time: 0.050s)
+
+*** applying m150929_034627_session_to_mysql
+    > create table session ... done (time: 0.050s)
+*** applied m150929_034627_session_to_mysql (time: 0.056s)
+
+*** applying m150929_115951_project_user_group
+    > create table group ... done (time: 0.024s)
+    > add column avatar string(100) DEFAULT "default.jpg" COMMENT "头像图片地址" AFTER email to table {{%user}} ... done (time: 0.066s)
+*** applied m150929_115951_project_user_group (time: 0.099s)
+
+*** applying m151005_001053_alter_conf_2_project
+    > rename table conf to project ... done (time: 0.012s)
+*** applied m151005_001053_alter_conf_2_project (time: 0.016s)
+
+*** applying m151010_050344_group_user_admin
+    > add column type smallint(1) DEFAULT 0 COMMENT "用户在项目中的关系类型 0普通用户， 1管理员" to table group ... done (time: 0.044s)
+    > alter column user_id in table group to integer(32) NOT NULL COMMENT "用户id" ... done (time: 0.054s)
+*** applied m151010_050344_group_user_admin (time: 0.102s)
+
+*** applying m151011_054352_task_need_more_long
+    > alter column excludes in table project to text COMMENT "要排除的文件" ... done (time: 0.080s)
+    > alter column hosts in table project to text COMMENT "目标机器列表" ... done (time: 0.047s)
+    > alter column pre_deploy in table project to text COMMENT "部署前置任务" ... done (time: 0.061s)
+    > alter column post_deploy in table project to text COMMENT "同步之前任务" ... done (time: 0.078s)
+    > alter column post_release in table project to text COMMENT "同步之后任务" ... done (time: 0.055s)
+*** applied m151011_054352_task_need_more_long (time: 0.326s)
+
+*** applying m151012_135612_task_add_branch
+    > add column branch string(100) DEFAULT "master" comment "选择上线的分支" to table task ... done (time: 0.049s)
+    > alter column name in table project to string(100) DEFAULT "master" comment "项目名字" ... done (time: 0.037s)
+*** applied m151012_135612_task_add_branch (time: 0.091s)
+
+*** applying m151014_115546_add_pre_release_task
+    > alter column post_release in table project to text COMMENT "同步之前目标机器执行的任务" ... done (time: 0.004s)
+    > rename column post_release in table project to pre_release ... done (time: 0.008s)
+    > add column post_release text COMMENT "同步之后目标机器执行的任务" AFTER pre_release to table project ... done (time: 0.049s)
+*** applied m151014_115546_add_pre_release_task (time: 0.068s)
+
+*** applying m151018_032238_support_svn
+    > rename column git_url in table project to repo_url ... done (time: 0.006s)
+    > rename column git_type in table project to repo_mode ... done (time: 0.007s)
+    > alter column repo_mode in table project to string(50) DEFAULT "branch" COMMENT "上线方式：branch/tag" AFTER repo_url ... done (time: 0.031s)
+    > add column repo_type string(10) DEFAULT "git" COMMENT "上线方式：git/svn" AFTER repo_mode to table project ... done (time: 0.057s)
+    > add column repo_username string(50) DEFAULT "" COMMENT "版本管理系统的用户名，一般为svn的用户名" AFTER repo_url to table project ... done (time: 0.031s)
+    > add column repo_password string(100) DEFAULT "" COMMENT "版本管理系统的密码，一般为svn的密码" AFTER repo_username to table project ... done (time: 0.065s)
+    > add column file_list text COMMENT "文件列表，svn上线方式可能会产生" to table task ... done (time: 0.037s)
+    > alter column commit_id in table task to string(100) DEFAULT "" COMMENT "git commit id" ... done (time: 0.069s)
+*** applied m151018_032238_support_svn (time: 0.310s)
+
+*** applying m151027_063246_keep_version_num
+    > add column keep_version_num integer(3) NOT NULL DEFAULT 20 COMMENT "线上版本保留数" AFTER audit to table project ... done (time: 0.038s)
+    > add column enable_rollback integer(1) NOT NULL DEFAULT 1 COMMENT "能否回滚此版本:0no 1yes" to table task ... done (time: 0.047s)
+*** applied m151027_063246_keep_version_num (time: 0.091s)
+
+*** applying m160307_082032_ansible
+    > add column ansible smallint(3) NOT NULL DEFAULT 0 COMMENT "是否启用Ansible 0关闭，1开启" AFTER audit to table project ... done (time: 0.033s)
+*** applied m160307_082032_ansible (time: 0.038s)
+
+*** applying m160402_173643_add_post_release_delay
+    > add column post_release_delay integer(11) NOT NULL DEFAULT 0 COMMENT "每台目标机执行post_release任务间隔/延迟时间 单位:秒" AFTER post_release to table project ... done (time: 0.055s)
+*** applied m160402_173643_add_post_release_delay (time: 0.059s)
+
+*** applying m160418_035413_user_status_migrate
+    > alter column role in table {{%user}} to smallint(6) NOT NULL DEFAULT 1 ... done (time: 0.003s)
+    > alter column status in table {{%user}} to smallint(6) NOT NULL DEFAULT 1 ... done (time: 0.003s)
+    > update {{%user}} ... done (time: 0.004s)
+    > update {{%user}} ... done (time: 0.003s)
+    > update {{%user}} ... done (time: 0.005s)
+    > update {{%user}} ... done (time: 0.005s)
+    > update {{%user}} ... done (time: 0.002s)
+*** applied m160418_035413_user_status_migrate (time: 0.030s)
+
+*** applying m160420_015223_add_file_transmission_mode
+    > alter column created_at in table task to datetime COMMENT "创建时间" AFTER enable_rollback ... done (time: 0.053s)
+    > alter column updated_at in table task to datetime COMMENT "修改时间" AFTER created_at ... done (time: 0.032s)
+    > add column file_transmission_mode smallint(3) NOT NULL DEFAULT 1 COMMENT "上线文件模式: 1.全量所有文件 2.指定文件列表" AFTER branch to table task ... done (time: 0.044s)
+*** applied m160420_015223_add_file_transmission_mode (time: 0.136s)
+
+
+17 migrations were applied.
+
+Migrated up successfully.

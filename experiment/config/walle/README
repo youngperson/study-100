@@ -1,0 +1,85 @@
+Walle 一个web部署系统工具，配置简单、功能完善、界面流畅、开箱即用！支持git、svn版本管理，支持各种web代码发布，PHP，Python，JAVA等代码的发布、回滚，可以通过web来一键完成。
+
+安装
+
+1、宿主机安装 ansible
+    宿主机无需其他配置，兼容 ~/.ssh/config 名称、证书配置
+    目标机无需额外配置
+
+# yum install ansible
+
+
+walle
+    项目配置 中 开启Ansible
+    (可选) config/params.php 配置 ansible_hosts 文件存放路径
+    按正常流程发布、上线代码，传输文件、远程执行命令均会通过ansible并发执行
+
+1、代码下载
+
+# cd /www/sites/
+# git clone https://github.com/meolu/walle-web.git
+
+2、设置MySQL连接
+# cd walle-web
+# vi config/local.php # +23 设置mysql连接
+
+'db' => [
+    'dsn'       => 'mysql:host=localhost;dbname=walle', # 新建数据库walle
+    'username'  => 'walle',                          # 连接的用户名
+    'password'  => '123456',                         # 连接的密码
+],
+
+CREATE USER 'walle'@'localhost' IDENTIFIED BY '123456';
+CREATE DATABASE walle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;
+GRANT ALL ON walle.* TO 'walle'@'%' IDENTIFIED BY 'walle';
+
+
+3、安装composer
+# curl -sS https://getcomposer.org/installer | php
+# mv composer.phar /usr/local/bin/composer
+
+4、安装vendor
+# composer install  # 如果缺少bower-asset的话， 先安装：composer global require "fxp/composer-asset-plugin:*"
+
+5、初始化项目
+# ./yii walle/setup   # 初始化项目,需要你的yes
+
+
+6、配置Nginx
+    配置nginx/apache的webroot指向walle-web/web
+    凡是在第7步刷新页面看到50x均是前5步安装不完整，自行检查
+    凡是在第7步刷新页面看到404均是nginx配置不当，自行检查
+# vim /etc/nginx/conf.d/walle.conf
+
+server {
+	listen 8099;
+	index index.html index.php;
+	charset utf-8;
+
+	root "/www/sites/walle-web/web";
+
+	location / {
+		index index.php;
+
+		if (!-e $request_filename) {
+			rewrite ^(.*)$ /index.php last;
+		}
+	}
+
+	location ~ \.php$ {
+		fastcgi_pass 10.111.11.120:9099;
+		fastcgi_index index.php;
+		include fastcgi_params;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+		fastcgi_buffer_size 16k;
+		fastcgi_buffers 4 16k;
+		fastcgi_connect_timeout 300;
+		fastcgi_send_timeout 300;
+		fastcgi_read_timeout 300;
+	}
+}
+
+7、修改代码
+
+
