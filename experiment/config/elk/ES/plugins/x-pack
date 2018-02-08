@@ -1,0 +1,72 @@
+ELK新版本自带的插件
+https://www.elastic.co/cn/downloads/x-pack
+
+按照官方教程安装
+
+1、Install X-Pack into Elasticsearch
+
+    # cd /usr/share/elasticsearch/
+    # bin/elasticsearch-plugin install x-pack
+
+2、Start Elasticsearch/Restart Elasticsearch
+
+    # systemctl restart elasticsearch
+
+3、Generate default passwords（把生成的信息记录下来）
+
+    # cd /usr/share/elasticsearch/
+    # bin/x-pack/setup-passwords auto
+
+    [root@VM_0_58_centos bin]# x-pack/setup-passwords auto
+    Initiating the setup of passwords for reserved users elastic,kibana,logstash_system.
+    The passwords will be randomly generated and printed to the console.
+    Please confirm that you would like to continue [y/N]y
+
+
+    Changed password for user kibana
+    PASSWORD kibana = &~nyDT1e~PJR#E~r6qVi
+
+    Changed password for user logstash_system
+    PASSWORD logstash_system = XFzwm1@n&fHGgBi4e595
+
+    Changed password for user elastic
+    PASSWORD elastic = -F?z6~5cRoPR7xvv0%#2
+
+4、Install X-Pack into Kibana（安装起来很慢、对于生产环境，如果有需要建议全部安装好后用）
+
+    # cd /usr/share/kibana/
+    # bin/kibana-plugin install x-pack
+
+5、Add credentials to the kibana.yml file（步骤三生产的密码）
+
+    elasticsearch.username: "kibana"
+    elasticsearch.password:  "&~nyDT1e~PJR#E~r6qVi"
+
+
+6、Start Kibana/Restart Kibana
+
+    # syatemctl restart kibana
+
+===================================
+
+7、登录kibana
+
+    用elastic + 上面生成的密码
+
+8、登录cerebro
+
+    用elastic + 上面生成的密码
+
+9、修改消费kafka数据到ES中的代码
+
+    Encountered a retryable error. Will Retry with exponential backoff
+    https://discuss.elastic.co/t/logstash-retry-with-exponential-backoff/106744
+
+    在output中加上
+    user => "elastic"
+    password => "-F?z6~5cRoPR7xvv0%#2"
+
+10、bigdesk
+
+    Nginx 401 unauthorized
+    待解决

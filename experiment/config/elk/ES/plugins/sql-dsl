@@ -1,0 +1,52 @@
+把MySQL查询转换成ES的查询
+https://github.com/NLPchina/elasticsearch-sql
+
+查看ES的版本是 6.1.2
+
+# 安装
+/usr/share/elasticsearch/bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.1.2.0/elasticsearch-sql-6.1.2.0.zip
+
+# 下载超时，把文件下载到本地上传的七牛上去
+/usr/share/elasticsearch/bin/elasticsearch-plugin install http://7xp9ru.com1.z0.glb.clouddn.com/elasticsearch-sql-6.1.2.0.zip
+
+
+# On elasticsearch 5.x/6.x, download and extract site.
+cd /opt/es-plugins
+wget https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-sql-site-standalone.zip
+unzip es-sql-site-standalone.zip -d es-sql-site
+
+# 启动
+cd site-server
+npm install express --save
+nohup node node-server.js &
+
+# 设置Nginx代理之类
+在代理机器上面设置好了反向代理
+在最终的机器上也设置下Nginx的访问路径之类
+
+反向代理
+
+server
+{
+    listen 8699;
+    location / {
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://10.111.11.120:8080;
+    }
+    access_log /var/log/nginx/es-sql.log;
+}
+
+
+10.111.11.120的Nginx设置指向/usr/share/elasticsearch/
+
+# 使用
+
+需要重启ES，让插件得到加载
+在界面的右上角设置为    http://47.97.194.220:9200/
+写MySQL查询方式，就能转换成ES的语法，这样我们就能在grafana中去写ES的查询代码了
+
+
+在kibana界面的Dev Tools里面输入：GET _sql?sql=SELECT * FROM nginx_error_log_2018.02.08

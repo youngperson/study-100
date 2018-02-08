@@ -45,6 +45,9 @@ Nginx配置
     https://grafana.com/dashboards/4415/revisions
     https://grafana.com/dashboards/2292
 
+学习ES的查询语法
+    https://www.elastic.co/guide/en/elasticsearch/reference/5.0/query-dsl-query-string-query.html#query-string-syntax
+
 
 # nginx access log format
 
