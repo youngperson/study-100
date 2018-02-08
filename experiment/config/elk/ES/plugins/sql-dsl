@@ -19,7 +19,37 @@ unzip es-sql-site-standalone.zip -d es-sql-site
 cd /opt/es-plugins/es-sql-site/site-server
 vim /opt/es-plugins/es-sql-site/site-server/site_configuration.json  监听端口改为8699
 npm install express --save
-nohup node node-server.js &
+
+进程经常自动的被kill，只要一关闭当前的终端窗口
+nohup node /opt/es-plugins/es-sql-site/site-server/node-server.js &
+forever start node-server.js
+
+
+Node的工具 forever 的功能很简单，就是保证进程退出时，应用会自动重启。
+https://github.com/foreverjs/forever
+
+    # 作为前台任务启动
+    $ forever server.js
+
+    # 作为服务进程启动
+    $ forever start app.js
+
+    # 停止服务进程
+    $ forever stop Id
+
+    # 重启服务进程
+    $ forever restart Id
+
+    # 监视当前目录的文件变动，一有变动就重启
+    $ forever -w server.js
+
+    # -m 参数指定最多重启次数
+    $ forever -m 5 server.js
+
+    # 列出所有进程
+    $ forever list
+
+
 
 # 设置Nginx代理之类
 在代理机器上面设置好了反向代理
