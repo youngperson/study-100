@@ -18,6 +18,13 @@ walle
 
 1、代码下载
 
+说明：找好宿主机器(walle所在的机器)，是一个中间机器，是代码托管与远程目标机群的纽带。所以宿主机需要与代码托管(github/gitlab)和远程目标机群都建立ssh-key信任。
+选择10.111.11.120做为宿主机器
+[root@qshz-analysis test-sites]# cat ~/.ssh/id_rsa.pub
+
+登录目标机器---把宿主机器的公钥放置到目标机器中去
+[root@qshz-analysis-2 ~]# echo ssh-rsa 公钥字符串 >> ~/.ssh/authorized_keys
+
 # cd /www/sites/
 # git clone https://github.com/meolu/walle-web.git
 
@@ -93,3 +100,110 @@ server
     }
     access_log /var/log/nginx/walle.log;
 }
+7、QA
+
+7-1、【宿主机器对目前的读写权限】宿主机代码检出检测出错，请确认php进程用户apache有代码存储仓库/www/test-sites读写权限。
+
+    [root@qshz-analysis test-sites]# chown -R www_php:www_php /www/test-sites/
+    [root@qshz-analysis test-sites]# chmod -R 755 /www/test-sites/
+
+    测试环境会在宿主机器中的代码检出仓库路径下创建基于git地址中项目名称的目录 git@code.qschou.com:qshz/hubble.git
+
+    # 测试环境
+        mdkir /www/test-sites/test/hubble
+    # 预发布环境
+        mdkir /www/test-sites/simu/hubble
+    # 线上环境
+        mdkir /www/test-sites/prod/hubble
+
+
+
+7-2、【php-fpm进程的用户生成公钥】宿主机代码检出检测出错，请确认把php进程用户apache的ssh-key加入git的deploy-keys列表。(代码会检测当前PHP-FPM运行的用户和组,我们新建一个)
+
+    [root@qshz-analysis hubble]# su apache
+    This account is currently not available.
+
+    [root@qshz-analysis hubble]# cat /etc/passwd | grep apache
+    apache:x:48:48:Apache:/usr/share/httpd:/sbin/nologin
+
+    发现它的shell是“/sbin /nologin”，需要将起改成“/bin/bash”,修改完毕后，保存退出!(不影响到php-fpm,照样平滑重启也没问题)
+    [root@qshz-analysis hubble]# vim /etc/passwd
+    [root@qshz-analysis hubble]# su apache
+    bash-4.2$ ssh-keygen -t rsa -C "renliang_wan@qingsongchou.com"
+
+    发现php-fpm自带的用户Apache不能生产公钥
+
+    ================================================
+
+    上面操作发现php-fpm自带的用户Apache不能生产公钥，我们选择新建一个用户做php-fpm的用户
+    useradd会生成一个同名字的组
+    [root@qshz-analysis hubble]# useradd www_php
+    [root@qshz-analysis hubble]# id www_php
+    [root@qshz-analysis hubble]# vim /etc/php-fpm.d/www.conf
+    listen.xxx 如果自身是注释的就不改
+    # listen.ower = www_php
+    # listen.group = www_php
+    user = www_php
+    group = www_php
+
+    平滑重启PHP-FPM,发现用户边为我们改的www_php了,在报没有权限的地方加上
+    chown www_php:www_php -R xx
+    chmod -R 755 XXXX
+
+    [error] 2481#0: *3 FastCGI sent in stderr: “PHP message: PHP Fatal error: Uncaught Exception: Cannot start session. in /usr/share/zabbix/include/classes/core/CSession.php:50
+    修改php-fpm的用户和组之后，zabbix一直报错，session相关的
+    路径名称：/var/lib/php/session与/var/lib/php/wsdlcache
+    chown www_php:www_php -R /var/lib/php
+    chmod -R 755 /var/lib/php
+
+
+    ================================================
+
+    把www_php生成的公钥添加到需要免密码pull的项目中去
+    [root@qshz-analysis hubble]# ps -ef | grep php-fpm
+
+    根据gitlab中的提示，切换到www_php用户，生产公钥，部署到gitlab
+    [root@qshz-analysis hubble]# su www_php
+    [www_php@qshz-analysis hubble]$ ssh-keygen -t rsa -C "renliang_wan@qingsongchou.com"
+    根据提示公钥生成在/home/www_php/.ssh/
+    [www_php@qshz-analysis hubble]$ cat /home/www_php/.ssh/id_rsa.pub
+
+
+    宿主机代码检出检测出错，请确认把php进程用户www_php的ssh-key加入git的deploy-keys列表
+    添加之后，在walle-web中检测发现还报上面的错误，手动su www_php用户去git clone git@code.qschou.com:qshz/hubble.git下，然后在删除文件去web中试试
+
+
+
+7-3、目标机器检测出错，请确认php进程apache用户ssh-key加入目标机器的root用户ssh-key信任列表。
+    目标机器的用户选择root,因为我们把宿主机器的www_php的公钥，给到的是目标机器的root的authorized_keys中
+
+    把上面生成的公钥复制到目标机器中去，实现免密码登录
+
+    从这里可以看出，root用户的公钥在~/.ssh/ 其它用户的在/home/用户名字/.ssh/
+
+    [root@qshz-analysis www_php]# cat /home/www_php/.ssh/id_rsa.pub
+    登录进去目标主机
+    [root@qshz-analysis www_php]# ssh root@10.111.11.123
+    [root@qshz-analysis-2 ~]# echo ssh-rsa 公钥字符串 >> ~/.ssh/authorized_keys
+
+
+
+
+7-4、目标机器检测出错，请确认root有目标机器发布版本库/www/hubble写入权限。
+
+
+8、配置邮箱账户
+
+    # cd /www/sites/walle-web
+    # vim config/local.php
+
+
+在QA机器上部署这个walle
+10.111.11.83
+
+
+小结：代码中会去判断宿主机器(walle项目所在机器)php-fpm的运行用户，根据此用户去生成rsa公钥，实现免密码登录。
+     rsa公钥的作用如下：
+     1、和Gitlba中代码之间的免密码操作,在gitlab中添加上公钥
+     2、宿主机器和目标机器之间的免密码，在目标机器中加上此用户生成的公钥
+     3、web界面的操作，宿主机器从gitlab中拉取代码---->ansible(基于ssh)--->目标机器
