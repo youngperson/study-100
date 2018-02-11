@@ -191,6 +191,20 @@ server
 
 7-4、目标机器检测出错，请确认root有目标机器发布版本库/www/hubble写入权限。
 
+7-5、RequestsDependencyWarning: urllib3 (1.22) or chardet (2.2.1) doesn't match a supported version! RequestsDependencyWarning
+    python库中urllib3 (1.21.1) or chardet (2.2.1) 的版本不兼容
+
+    pip uninstall urllib3
+    pip uninstall  chardet
+    pip install requests
+
+7-6、ansible cannot overwrite directory ?/data/wwwroot2? with non-directorynon-zero return code
+    为了避免这个错误，我们把webroot和发布版本库的路径不要设置在同一个级别下面
+
+    webroot的目录一开始也不能存在，代码的最终部署路径，请不要在目标机新建此目录，walle会自动生成此软链，正确设置父目级录即可
+
+
+
 
 8、配置邮箱账户
 
@@ -207,3 +221,5 @@ server
      1、和Gitlba中代码之间的免密码操作,在gitlab中添加上公钥
      2、宿主机器和目标机器之间的免密码，在目标机器中加上此用户生成的公钥
      3、web界面的操作，宿主机器从gitlab中拉取代码---->ansible(基于ssh)--->目标机器
+
+ 选取分支，版本选取(是指每次commit，push后产生的一个版本)
