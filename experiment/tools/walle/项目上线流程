@@ -1,0 +1,11 @@
+基于git clone一份到本机去开发
+每次开发一个功能的时候，可以新建一个自己的分支去开发  8316_wanrenliang_sql  端口号_名字_功能描述
+开发完成后，把分支部署到测试分支上面去进行测试       8316_wanrenliang_sql 合并到 test-branch分支
+测试完成之后，我们把分支发起合并请求到master，做好合并权限控制，assign给相关的同事进行代码检查    8316_wanrenliang_sql 发起merge request到 master
+
+
+相关的同事把代码合并到master之后  使用瓦力去部署
+创建上线单 - 选择对应的项目 - 选择分支(上线环境选master) - 选择版本
+
+
+
