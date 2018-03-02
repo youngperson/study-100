@@ -190,11 +190,16 @@ S: d87881af737465bc856ae4be12c92945c080e07a 10.111.11.140:8001
 
     https://www.zybuluo.com/phper/note/195558
 
+    新增1个节点
+        配置好后启动该节点。
+        加入到集群中去 redis-trib.rb add-node IP:port(新增节点) Ip:port(现有存在的一个节点)
+
 
     提供给调用方
         redis每个节点都相当于是整个集群的proxy
         hostname  port(0-9)
-
+        有个监控中心，注册中心去维护每个业务的Redis集群，如果有节点新增或者节点坏掉。及时变更在注册中心里面。
+        调用方就直接从注册中心去哪一批Redis的ip和port
 
 注意
 
