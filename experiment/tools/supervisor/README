@@ -1,0 +1,146 @@
+监控重启进程
+
+    最简单的方法，写个脚本fork进程运行，然后waitpid，如果获pid后就再次启动
+
+    最土的方法，配置cron任务，固定时间运行脚本检查进程是否存在，不存在则启动
+
+    使用supervisord
+        supervisord 用来启动supervisord
+        supervisorctl start/stop/restart/status [process_name] 对进程进行控制和状态查看
+        提供一个http server，能够在浏览器查看和操作进程启停。同时提供xmlrpc功能，可以自己编写CLI程序远程call supervisord的接口
+        缺点：不能对daemon程序监控，supervisord退出后会使被监管的进程也退出
+
+
+安装
+    # yum install python-setuptools-devel
+    # easy_install supervisor
+
+    补充：如果easy_install不好使就从官方下载，然后通过python安装
+
+    # cd /usr/local/src
+    # wget https://pypi.python.org/packages/44/60/698e54b4a4a9b956b2d709b4b7b676119c833d811d53ee2500f1b5e96dc3/supervisor-3.3.4.tar.gz
+    # tar zxf supervisor-xxxx.tar.gz
+    # cd /usr/local/src/supervisor-3.3.4
+    # python setup.py install
+    # python
+      输入  import supervisor
+
+    成功安装后可以登陆python控制台输入import supervisor 如果没提示错误则表示安装成功。
+
+
+修改配置文件
+
+    # vim /etc/supervisord.conf
+
+启动/reload supervisord
+
+    启动supervisord 通过 -c 选项指定配置文件路径
+    # supervisord -c /etc/supervisord.conf
+
+    supervisord 是启动supervisor  supervisorctl 是控制supervisord
+    # supervisorctl reload
+
+
+创建一个想守护的进程的文件名
+
+        进入/etc/supervisord.conf中指定的include目录下创建
+        # cd /etc/supervisord.d
+        # vim phpcs.conf
+
+
+command = /usr/bin/php /data/wwwroot/hubble/public/index.php phpcs/server/index
+该代码文件中有启动dameon，所以supervisor管理不了
+
+
+[program:phpcsServer]
+command = /usr/bin/php /data/wwwroot/test.php
+autostart = true
+startsecs = 5
+autorestart = true
+startretries = 3
+user = root
+redirect_stderr = true
+stdout_logfile_maxbytes = 20MB
+stdout_logfile_backups = 10
+stdout_logfile = /var/log/supervisor/phpcsServer.log
+stopasgroup=true
+
+
+命令大全
+
+    启动supervisord
+    # supervisord -c /etc/supervisord.conf
+
+    停止supervisord
+    # supervisorctl shutdown
+
+    重新加载配置文件
+    # supervisorctl reload
+
+    启动supervisord管理的所有进程
+    # supervisorctl start all
+
+    停止supervisord管理的所有进程
+    # supervisorctl stop all
+
+    启动supervisord管理的某一个特定进程
+    # supervisorctl start program-name // program-name为[program:xx]中的xx
+
+    停止supervisord管理的某一个特定进程
+    # supervisorctl stop program-name  // program-name为[program:xx]中的xx
+
+    重启所有进程或所有进程
+    # supervisorctl restart all // 重启所有supervisorctl reatart program-name // 重启某一进程，program-name为[program:xx]中的xx
+
+    查看supervisord当前管理的所有进程的状态
+    # supervisorctl status
+
+    使用supervisorctl 客户端命令
+    # supervisorctl -c /etc/supervisord.conf
+
+        > status    # 查看程序状态
+        > stop usercenter   # 关闭 usercenter 程序
+        > start usercenter  # 启动 usercenter 程序
+        > restart usercenter    # 重启 usercenter 程序
+        > reread    ＃ 读取有更新（增加）的配置文件，不会启动新添加的程序
+        > update    ＃ 重启配置文件修改过的程序
+
+
+web界面
+
+    根据/etc/supervisord.conf中inet_http_server
+    做下反向代理等对外提供
+
+
+历史问题
+
+    当集群规模扩大后，登录到每台主机使用supervior控制进程也是很麻烦的，能不能用一台主机作为客户端，同时连接集群中的所有主机，以一种中心化的方式统一管理集群中的所有进程？
+    之前一直使用的方式是使用交互式工具expect。supervisor本身有没有提供一种机制实现集群中所有进程的中央化管理？
+
+    目前测试成功的是使用一台主机作为客户端（supervisorctl），控制另一台服务器(supervisord)主机上的状态。
+    方法是在服务器端配置[inet_http_server]部分，开启TCP端口监听。
+    客户端配置[supervisorctl]部分，指定服务器端的serverurl，连接服务器端监听的端口。但是一个客户端只能连接一个服务器，无法指定多个服务器。
+
+
+给出个例子
+
+    [program:usercenter]
+    directory = /home/leon/projects/usercenter       ; 程序的启动目录
+    command = gunicorn -c gunicorn.py wsgi:app         ; 启动命令，可以看出与手动在命令行启动的命令是一样的
+    process_name=%(program_name)s       ; process_name expr (default %(program_name)s)
+    numprocs=1           ; number of processes copies to start (def 1)
+    autostart = true     ; 在 supervisord 启动的时候也自动启动
+    startsecs = 1        ; 启动 1 秒后没有异常退出，就当作已经正常启动了
+    autorestart = true   ; 程序异常退出后自动重启
+    startretries = 3     ; 启动失败自动重试次数，默认是 3
+    user = leon          ; 用哪个用户启动
+    redirect_stderr = true          ; 把 stderr 重定向到 stdout，默认 false
+    stdout_logfile_maxbytes = 20MB  ; stdout 日志文件大小，默认 50MB
+    stdout_logfile_backups = 10     ; stdout 日志文件备份数
+    ; stdout 日志文件，需要注意当指定目录不存在时无法正常启动，所以需要手动创建目录（supervisord 会自动创建日志文件）
+    stdout_logfile = /data/logs/usercenter_stdout.log
+    ;这一配置项的作用是：如果supervisord管理的进程px又产生了若干子进程，使用supervisorctl停止px进程，停止信号会传播给px产生的所有子进程，确保子进程也一起停止。这一配置项对希望停止所有进程的需求是非常有用的。
+    stopasgroup=true
+
+    ; 可以通过 environment 来添加需要的环境变量，一种常见的用法是修改PYTHONPATH ;process environment additions
+    ; environment=PYTHONPATH=$PYTHONPATH:/path/to/somewhere
