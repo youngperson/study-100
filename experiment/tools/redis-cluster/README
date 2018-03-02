@@ -1,0 +1,206 @@
+三台机器、每台机器下2个Redis节点，一主一从，三台构成Redis集群
+
+机器说明
+
+    10.111.11.139   主节点7000  从节点8001    （该节点上的实例  7000   8000）
+    10.111.11.140   主节点7001  从节点8002    （该节点上的实例  7001   8001）
+    10.111.11.141   主节点7002  从节点8000    （该节点上的实例  7002   8002）
+
+安装Redis
+
+    下载、解压、编译
+    # cd /usr/local/src
+    # wget http://download.redis.io/releases/redis-4.0.8.tar.gz
+    # tar zxvf redis-4.0.8.tar.gz
+    # cd redis-4.0.8
+    # make && make install
+
+    安装好之后命令在/usr/local/src/redis-4.0.8/src下面，在/usr/local/bin下面也会有一份，用的时候就不需要考虑所在目录了
+
+
+配置
+
+    # mkdir -p /usr/local/redis-cluster
+    # cd /usr/local/redis-cluster
+
+    该集群目录下创建以端口命令的目录，表示运行的实例端口
+    # mkdir 7000 8000
+
+    把配置文件拷贝到端口的目录下去
+    # cp /usr/local/src/redis-4.0.8/redis.conf /usr/local/redis-cluster/7000/
+    # cp /usr/local/src/redis-4.0.8/redis.conf /usr/local/redis-cluster/8000/
+
+    # vi 7000/redis.conf    配置主节点参照下面的
+    # mkdir -p  /var/log/redis
+
+    port                  7000                        //端口7000,7001,7002 等全部节点
+    bind                  10.111.11.139               //默认ip为127.0.0.1，需要改为其他节点机器可访问的ip，否则创建集群时无法访问对应的端口，无法创建集群
+    daemonize             yes                         //redis后台运行
+    pidfile               /var/run/redis_7000.pid     //pidfile文件对应7000,7001,7002 等全部节点
+    logfile               /var/log/redis/redis_7000.log //日志文件
+    cluster-enabled       yes                         //开启集群，把注释#去掉
+    cluster-config-file   nodes_7000.conf             //集群的配置，配置文件首次启动自动生成 7000,7001,7002 等全部节点
+    cluster-node-timeout  15000                       //请求超时，默认15秒，可自行设置
+    appendonly            yes                         //aof日志开启，有需要就开启，它会每次写操作都记录一条日志
+
+
+启动
+
+    # redis-server /usr/local/redis-cluster/7000/redis.conf
+    # redis-server /usr/local/redis-cluster/8000/redis.conf
+    # ps -ef | grep redis
+
+接着在另外两台机器上，重复以上。
+
+================================================================================================================================================
+
+关闭防火墙
+
+    # firewall-cmd --state  ##查看防火墙状态
+    # systemctl stop firewalld  ##关闭防火墙
+
+
+================================================================================================================================================
+
+安装ruby
+
+    随便找一台机器上安装下下面的(这里在10.111.11.140)
+    # yum install ruby ruby-devel rubygems rpm-build
+    # gem install redis
+
+    Fetching: redis-4.0.1.gem (100%)
+    ERROR:  Error installing redis:
+        redis requires Ruby version >= 2.2.2.
+
+    # gem install rubygems-update
+    # update_rubygems
+
+    # gem install redis
+
+================================================================================================================================================
+
+
+把3台机器连接在一起形成集群
+
+需要用到的命令就是redis-trib.rb,这是官方的一个用ruby写的一个操作redis cluster的命令，所以，你的机器上需要安装ruby。
+随便在一台机器上操作下面的命令
+
+# ll /usr/local/src/redis-4.0.8/src/redis-trib.rb
+# /usr/local/src/redis-4.0.8/src/redis-trib.rb create --replicas 1 10.111.11.139:7000 \
+  10.111.11.140:7001 10.111.11.141:7002
+
+  >>> Creating cluster
+  *** ERROR: Invalid configuration for cluster creation.
+  *** Redis Cluster requires at least 3 master nodes.
+  *** This is not possible with 3 nodes and 1 replicas per node.
+  *** At least 6 nodes are required.
+
+我们应该先给每台机器的各个节点全部是一样的配置才行，然后连接在一起的时候去指定主从关系
+
+修改上面的从配置和主配置一样的
+
+# /usr/local/src/redis-4.0.8/src/redis-trib.rb create --replicas 1 10.111.11.139:7000 10.111.11.140:7001 10.111.11.141:7002 10.111.11.139:8000 10.111.11.140:8001 10.111.11.141:8002
+
+>>> Creating cluster
+>>> Performing hash slots allocation on 6 nodes...
+Using 3 masters:
+10.111.11.139:7000
+10.111.11.140:7001
+10.111.11.141:7002
+Adding replica 10.111.11.140:8001 to 10.111.11.139:7000
+Adding replica 10.111.11.141:8002 to 10.111.11.140:7001
+Adding replica 10.111.11.139:8000 to 10.111.11.141:7002
+M: 3f8713463f1fb40f366e242e1fd3de65838c1618 10.111.11.139:7000
+   slots:0-5460 (5461 slots) master
+M: 40ad596027f02fa91546b5a5249c4093e0fbc00b 10.111.11.140:7001
+   slots:5461-10922 (5462 slots) master
+M: 1f95c51bb323e8f15170950874f082e3ab5d0bd5 10.111.11.141:7002
+   slots:10923-16383 (5461 slots) master
+S: ae8feb0458fa08422d3c178fc098ab3a2e822d6e 10.111.11.139:8000
+   replicates 1f95c51bb323e8f15170950874f082e3ab5d0bd5
+S: d87881af737465bc856ae4be12c92945c080e07a 10.111.11.140:8001
+   replicates 3f8713463f1fb40f366e242e1fd3de65838c1618
+S: 2c6de5c3463585eff92d397d00313ba73651910b 10.111.11.141:8002
+   replicates 40ad596027f02fa91546b5a5249c4093e0fbc00b
+Can I set the above configuration? (type 'yes' to accept):  yes
+
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join....
+>>> Performing Cluster Check (using node 10.111.11.139:7000)
+M: 3f8713463f1fb40f366e242e1fd3de65838c1618 10.111.11.139:7000
+   slots:0-5460 (5461 slots) master
+   1 additional replica(s)
+S: 2c6de5c3463585eff92d397d00313ba73651910b 10.111.11.141:8002
+   slots: (0 slots) slave
+   replicates 40ad596027f02fa91546b5a5249c4093e0fbc00b
+M: 40ad596027f02fa91546b5a5249c4093e0fbc00b 10.111.11.140:7001
+   slots:5461-10922 (5462 slots) master
+   1 additional replica(s)
+M: 1f95c51bb323e8f15170950874f082e3ab5d0bd5 10.111.11.141:7002
+   slots:10923-16383 (5461 slots) master
+   1 additional replica(s)
+S: ae8feb0458fa08422d3c178fc098ab3a2e822d6e 10.111.11.139:8000
+   slots: (0 slots) slave
+   replicates 1f95c51bb323e8f15170950874f082e3ab5d0bd5
+S: d87881af737465bc856ae4be12c92945c080e07a 10.111.11.140:8001
+   slots: (0 slots) slave
+   replicates 3f8713463f1fb40f366e242e1fd3de65838c1618
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+================================================================================================================================================
+
+验证集群
+
+    测试下集群的状态
+    [root@qshz-analysis-4 redis-cluster]# /usr/local/src/redis-4.0.8/src/redis-trib.rb check 10.111.11.141:7002
+    >>> Performing Cluster Check (using node 10.111.11.141:7002)
+    M: 1f95c51bb323e8f15170950874f082e3ab5d0bd5 10.111.11.141:7002
+       slots:10923-16383 (5461 slots) master
+       1 additional replica(s)
+    S: ae8feb0458fa08422d3c178fc098ab3a2e822d6e 10.111.11.139:8000
+       slots: (0 slots) slave
+       replicates 1f95c51bb323e8f15170950874f082e3ab5d0bd5
+    M: 40ad596027f02fa91546b5a5249c4093e0fbc00b 10.111.11.140:7001
+       slots:5461-10922 (5462 slots) master
+       1 additional replica(s)
+    S: 2c6de5c3463585eff92d397d00313ba73651910b 10.111.11.141:8002
+       slots: (0 slots) slave
+       replicates 40ad596027f02fa91546b5a5249c4093e0fbc00b
+    M: 3f8713463f1fb40f366e242e1fd3de65838c1618 10.111.11.139:7000
+       slots:0-5460 (5461 slots) master
+       1 additional replica(s)
+    S: d87881af737465bc856ae4be12c92945c080e07a 10.111.11.140:8001
+       slots: (0 slots) slave
+       replicates 3f8713463f1fb40f366e242e1fd3de65838c1618
+    [OK] All nodes agree about slots configuration.
+    >>> Check for open slots...
+    >>> Check slots coverage...
+    [OK] All 16384 slots covered.
+
+
+    测试连接集群(记得加-c,集群方式去连接)
+    [root@qshz-analysis-3 redis-cluster]# redis-cli -c -h 10.111.11.139  -p 8000
+
+    测试某个节点挂掉(数据没丢失)
+    # kill -9  xxxx
+
+    https://www.zybuluo.com/phper/note/195558
+
+
+    提供给调用方
+        redis每个节点都相当于是整个集群的proxy
+        hostname  port(0-9)
+
+
+注意
+
+================================================================================================================================================
+
+拥有slot的节点下线就会造成集群停止服务
+Redis 集群没有并使用传统的一致性哈希来分配数据，而是采用另外一种叫做哈希槽 (hash slot)的方式来分配的
+要3个或以上的主节点，否则在创建集群时会失败，并且当存活的主节点数小于总节点数的一半时，整个集群就无法提供服务了。
+在redis cluster没出来之前，codis被当做redis cluster在用
