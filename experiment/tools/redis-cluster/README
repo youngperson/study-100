@@ -193,9 +193,11 @@ S: d87881af737465bc856ae4be12c92945c080e07a 10.111.11.140:8001
 
     https://www.zybuluo.com/phper/note/195558
 
-    新增1个节点
+    新增1个节点（默认是新增master节点）
         配置好后启动该节点。
         加入到集群中去 redis-trib.rb add-node IP:port(新增节点) Ip:port(现有存在的一个节点)
+        添加节点后记得分配哈希槽
+        http://blog.51yip.com/nosql/1726.html
 
 
     提供给调用方
