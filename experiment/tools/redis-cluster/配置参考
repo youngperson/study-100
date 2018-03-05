@@ -1,0 +1,55 @@
+echo '#GENERAL
+daemonize yes
+port 6300
+tcp-backlog 511
+timeout 20
+tcp-keepalive 0
+loglevel notice
+maxmemory 5gb
+maxclients 100000
+maxmemory-policy volatile-ttl
+databases 16
+dir /data/redis/6300
+slave-serve-stale-data yes
+loglevel notice
+logfile "/data/redis/6300/redis_6300.log"
+#slave只读
+slave-read-only yes
+#not use default
+repl-disable-tcp-nodelay yes
+slave-priority 100
+#打开aof持久化
+appendonly yes
+#每秒一次aof写
+appendfsync everysec
+#关闭在aof rewrite的时候对新的写操作进行fsync
+no-appendfsync-on-rewrite yes
+auto-aof-rewrite-min-size 64mb
+lua-time-limit 5000
+#打开redis集群
+cluster-enabled yes
+cluster-config-file /data/redis/6300/nodes-6300.conf
+#节点互连超时的阀值
+cluster-node-timeout 15000
+#一个主节点在拥有多少个好的从节点的时候就要割让一个从节点出来给其他没有从节点的主节点
+cluster-migration-barrier 1
+#如果某一些key space没有被集群中任何节点覆盖，最常见的就是一个node挂掉，集群将停止接受写入
+cluster-require-full-coverage no
+#部署在同一机器的redis实例，把auto-aof-rewrite搓开，防止瞬间fork所有redis进程做rewrite,占用大量内存
+auto-aof-rewrite-percentage 80-100
+slowlog-log-slower-than 10000
+slowlog-max-len 128
+notify-keyspace-events ""
+hash-max-ziplist-entries 512
+hash-max-ziplist-value 64
+list-max-ziplist-entries 512
+list-max-ziplist-value 64
+set-max-intset-entries 512
+zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+activerehashing yes
+client-output-buffer-limit normal 0 0 0
+client-output-buffer-limit slave 256mb 64mb 60
+client-output-buffer-limit pubsub 32mb 8mb 60
+hz 10
+aof-rewrite-incremental-fsync yes ' > /etc/redis_6300.conf
