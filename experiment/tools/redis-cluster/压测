@@ -1,0 +1,131 @@
+hashtag去压测Redis4.0集群
+自带的工具对单点压测比较准确
+
+暂时没有找到hashtag去压测Redis4，用自带的工具。
+
+
+一、做好机器的监控
+    监控Linux环境下的性能数据时，除了使用linux的top、netstat等命令实时监控，更需要把数据导出进行分析，
+    这是nmon的出现就及时解决了这一难题，同时不管是使用Loadrunner或JMeter做性能测试时，也需要监控linux的性能数据检测；
+
+# yum install nmon
+# nmon               //运行起来,有交互模式去看数据
+# nmon -f -s1 -c 30  //数据捕捉模式下使用它
+
+-f意味着你想将数据保存到文件中，不在屏幕上显示。
+-s13意味着你每隔13秒想要捕捉数据。
+-c 30意味着你想要30个数据点或快照。
+
+
+二、压测
+
+    Usage: redis-benchmark [-h <host>] [-p <port>] [-c <clients>] [-n <requests]> [-k <boolean>]
+
+    -h <hostname>      Server hostname (default 127.0.0.1)
+    -p <port>          Server port (default 6379)
+    -s <socket>        Server socket (overrides host and port)
+    -c <clients>       Number of parallel connections (default 50)
+    -n <requests>      Total number of requests (default 10000)
+    -d <size>          Data size of SET/GET value in bytes (default 2)
+    -k <boolean>       1=keep alive 0=reconnect (default 1)
+    -r <keyspacelen>   Use random keys for SET/GET/INCR, random values for SADD
+      Using this option the benchmark will get/set keys
+      in the form mykey_rand:000000012456 instead of constant
+      keys, the <keyspacelen> argument determines the max
+      number of values for the random number. For instance
+      if set to 10 only rand:000000000000 - rand:000000000009
+      range will be allowed.
+    -P <numreq>        Pipeline <numreq> requests. Default 1 (no pipeline).
+    -q                 Quiet. Just show query/sec values 只显示每秒钟能处理多少请求数结果
+    --csv              Output in CSV format
+    -l                 Loop. Run the tests forever 永久测试
+    -t <tests>         Only run the comma separated list of tests. The test
+                        names are the same as the ones produced as output.
+    -I                 Idle mode. Just open N idle connections and wait.
+
+
+    redis-benchmark -h 127.0.0.1 -p 6379 -c 5000 -n 100000 -d 100 -q
+    5000个并发连接，100000个请求，检测host为127.0.0.1 端口为6379的redis服务器性能
+
+结论
+
+[root@qshz-analysis-5 ~]# redis-benchmark -h 10.111.11.141 -p 7001 -c 500 -n 1  -d 100 -q
+PING_INLINE: 142.86 requests per second
+PING_BULK: 166.67 requests per second
+SET: 166.67 requests per second
+GET: 166.67 requests per second
+INCR: 166.67 requests per second
+LPUSH: 166.67 requests per second
+RPUSH: 166.67 requests per second
+LPOP: 200.00 requests per second
+RPOP: 166.67 requests per second
+SADD: 142.86 requests per second
+HSET: 166.67 requests per second
+SPOP: 200.00 requests per second
+LPUSH (needed to benchmark LRANGE): 166.67 requests per second
+LRANGE_100 (first 100 elements): 166.67 requests per second
+LRANGE_300 (first 300 elements): 200.00 requests per second
+LRANGE_500 (first 450 elements): 200.00 requests per second
+LRANGE_600 (first 600 elements): 200.00 requests per second
+MSET (10 keys): 166.67 requests per second
+
+[root@qshz-analysis-5 ~]# redis-benchmark -h 10.111.11.141 -p 7001 -c 5000 -n 100  -d 100 -q
+PING_INLINE: 1351.35 requests per second
+PING_BULK: 1315.79 requests per second
+SET: 1369.86 requests per second
+GET: 1369.86 requests per second
+INCR: 1388.89 requests per second
+LPUSH: 1333.33 requests per second
+RPUSH: 1333.33 requests per second
+LPOP: 1298.70 requests per second
+RPOP: 1388.89 requests per second
+SADD: 1333.33 requests per second
+HSET: 1408.45 requests per second
+SPOP: 1315.79 requests per second
+LPUSH (needed to benchmark LRANGE): 1351.35 requests per second
+LRANGE_100 (first 100 elements): 1408.45 requests per second
+LRANGE_300 (first 300 elements): 1282.05 requests per second
+LRANGE_500 (first 450 elements): 1298.70 requests per second
+LRANGE_600 (first 600 elements): 1351.35 requests per second
+MSET (10 keys): 1190.48 requests per second
+
+[root@qshz-analysis-5 ~]# redis-benchmark -h 10.111.11.141 -p 7001 -c 5000 -n 1000  -d 100 -q
+PING_INLINE: 11494.25 requests per second
+PING_BULK: 12345.68 requests per second
+SET: 11904.76 requests per second
+GET: 11235.96 requests per second
+INCR: 10869.57 requests per second
+LPUSH: 10989.01 requests per second
+RPUSH: 6802.72 requests per second
+LPOP: 11111.11 requests per second
+RPOP: 11494.25 requests per second
+SADD: 11363.64 requests per second
+HSET: 11494.25 requests per second
+SPOP: 12345.68 requests per second
+LPUSH (needed to benchmark LRANGE): 9345.79 requests per second
+LRANGE_100 (first 100 elements): 11235.96 requests per second
+LRANGE_300 (first 300 elements): 12195.12 requests per second
+LRANGE_500 (first 450 elements): 11764.71 requests per second
+LRANGE_600 (first 600 elements): 11235.96 requests per second
+MSET (10 keys): 10752.69 requests per second
+
+[root@qshz-analysis-5 ~]# redis-benchmark -h 10.111.11.141 -p 7001 -c 5000 -n 100000  -d 100 -q
+PING_INLINE: 58788.95 requests per second
+PING_BULK: 56242.97 requests per second
+SET: 57636.89 requests per second
+GET: 63492.06 requests per second
+INCR: 64599.48 requests per second
+LPUSH: 57045.07 requests per second
+RPUSH: 54975.26 requests per second
+LPOP: 62111.80 requests per second
+RPOP: 58823.53 requests per second
+SADD: 57903.88 requests per second
+HSET: 62932.66 requests per second
+SPOP: 57703.40 requests per second
+LPUSH (needed to benchmark LRANGE): 55096.42 requests per second
+LRANGE_100 (first 100 elements): 64724.92 requests per second
+LRANGE_300 (first 300 elements): 55066.08 requests per second
+LRANGE_500 (first 450 elements): 62383.03 requests per second
+LRANGE_600 (first 600 elements): 54347.82 requests per second
+MSET (10 keys): 55959.71 requests per second
+
