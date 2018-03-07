@@ -1,0 +1,95 @@
+ansible
+
+一、介绍
+
+无客户端版的ansible管理工具可能成为优先考虑的工具之一。
+
+能够解决我们在it工作中，一遍又一遍执行相同任务。利用它，我们可以只解决一次问题，然后自动化运行我们的解决方案。
+
+基于ssh，采用推送的方式对客户端系统进行配置。
+
+在一定程度上，我们可以说ansible要比saltstack稳定，毕竟zeromq这东西因为太快，抛弃了数据检查。当然你要是用rabbitmq数据是稳定了，但是性能又xx了。
+
+openstack 有时候会因为rabbitmq造成通信队列的瓶颈。
+
+
+========================================================================================
+
+二、ssh免密码登录
+
+在控制机器中生成ssh秘钥对
+# ssh-keygen -t rsa
+
+把控制机器中的公钥分别复制到远程机器的.ssh/authorized_keys中
+客户端公钥记录文件（known_hosts）
+
+
+# ssh-copy-id -i ~/.ssh/id_rsa.pub root@10.10.100.205
+# ssh-copy-id -i ~/.ssh/id_rsa.pub root@10.10.100.206
+# ssh-copy-id -i ~/.ssh/id_rsa.pub root@10.10.100.207
+
+========================================================================================
+
+三、ansible的常用模块介绍
+
+在一台控制主机中(10.111.11.139)安装ansible，该机器和其它机器之间是免密码登录的（上面已经配置好了）
+
+# yum install ansible
+
+配置机器的列表(配置文件在/etc/ansible/下)
+# vim /ec/ansible/hosts
+
+[web]
+10.2.20.111
+10.2.20.112
+
+[common]
+10.2.20.1115
+
+
+
+下面的test表示的是hosts配置中的分组名称
+列出文件列表
+# ansible test -a "ls "
+
+测试机器的连通性
+# ansible test -m ping
+
+执行远程命令
+# ansible test -m command -a 'uptime'
+
+执行主控端脚本
+# ansible test -m script -a '/etc/ansible/script/test.sh'
+
+执行远程主机脚本
+# ansible test -m shell -a 'ps aux|grep zabbix'
+
+类似shell
+# ansible test -m raw -a "ps aux|grep zabbix|awk '{print \$2}'"
+
+创建软链接
+# ansible test -m file -a "src=/etc/resolv.conf dest=/tmp/resolv.conf state=link"
+
+删除软链接
+# ansible test -m file -a "path=/tmp/resolv.conf state=absent"
+
+复制文件到远程服务器
+[root@vpc-qshz-ops01 ansible]# ansible common -m copy -a "src=/etc/ansible/input_file_output_kafka_all.conf dest=/etc/logstash/conf.d/input_file_output_kafka_all.conf owner=root group=root mode=0644"
+# ansible test -m copy -a "src=/etc/ansible/ansible.cfg dest=/tmp/ansible.cfg owner=root group=root mode=0644"
+
+
+ansible常用模块
+http://blog.csdn.net/wanghailong041/article/details/45770359
+http://blog.csdn.net/asd1992498/article/details/53887870
+
+======================
+
+四、ansible playbook
+
+Playbook是一种与adhoc任务执行模式完全不同的方式，而且特别强大。
+简单地说，Playbooks是一个非常简单的配置管理和多机器部署系统的基础，不同于任何已经存在的配置系统，而且非常适合部署复杂应用程序。
+
+
+yml语法：yml是一种比较精简的语法结构，通过空格来控制层级。
+
+https://juejin.im/post/59decdb9518825422c0ca44c
