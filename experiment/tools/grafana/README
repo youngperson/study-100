@@ -42,7 +42,6 @@ Nginx配置
 
     选择官方提供的一些dashboard进行改造
     下载---->导入dashboard
-    https://grafana.com/dashboards/4415/revisions
     https://grafana.com/dashboards/2292
 
 学习ES的查询语法
