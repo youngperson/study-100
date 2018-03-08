@@ -8,6 +8,8 @@ tags	       	_jsonparsefailure
 怀疑是客户端的logstash版本为2.x的原因，升级为最新版本的logstash
 
 
+错误信息：LogStash::Json::ParserError: Unrecognized character escape 'x' (code 120)
+http://blog.51cto.com/vekergu/1784562
 
 ============================================================================================
 
