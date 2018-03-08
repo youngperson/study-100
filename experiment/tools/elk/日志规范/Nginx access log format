@@ -1,7 +1,7 @@
 格式
 log_format main   '{"@timestamp":"$time_iso8601",'
                         '"@source":"$server_addr",'
-                        '"hostname":"$hostname",'
+                        '"host":"$hostname",'
                         '"ip":"$http_x_forwarded_for",'
                         '"client":"$remote_addr",'
                         '"request_method":"$request_method",'
