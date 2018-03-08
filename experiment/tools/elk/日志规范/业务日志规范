@@ -1,0 +1,51 @@
+业务日志格式
+
+    字段	类型	值	描述
+    request_id	string	uniqid	请求id
+    time	string	2018/09/10 10:01:03.045	记录时间
+    host	stirng	hostname	服务端主机名
+    uid	int	46902	用于uid
+    phone	string	13498703445	用户手机
+    uagent	string	Safari/537.36	客户端ua
+    category	string	mutual_login_success	日志分类
+    url	string	/v2/user/info?uid=12345	服务的url
+    level	string	info	日志级别
+    ip	string	127.0.0.1	用户ip
+    client_version	string	1.9.7	客户端版本
+    msg	string	{“status”=>“ok”}	日志正文
+
+
+示例代码
+
+    $context = json_encode($record['context']);
+    $message = [
+        'request_id'     => 'request_id',
+        'time'           => date('Y/m/d H:i:s') . sprintf('.%03d', microtime()*1000),
+        'host'           => php_uname('n'),
+        'uid'            => 'uid',
+        'phone'          => 'phone',
+        'uagent'         => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+        'category'       => 'mutual_login_success',
+        'url'            => isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '',
+        'level'          => 'info',
+        'ip'             => 'client_ip',
+        'client_version' => '1.9.7',
+        'msg'            => $msg
+    ];
+
+    if (mb_strlen($context) > 20000) {
+        $message['msg'] = 'The message is too long to exceed 20000 placeholders';
+    }
+
+    error_log(json_encode($message) . PHP_EOL, 3, $this->filename);
+
+Category命名规则
+
+    业务名称: mutual
+    模块名称: auth
+    动作名称: login
+
+    Category: mutual_auth_login
+
+    登录失败: mutual_auth_login_failed
+    登录成功: mutual_auth_login_success

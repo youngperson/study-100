@@ -1,0 +1,62 @@
+概述
+
+    系统中不可避免的依赖外部服务，当这些服务有慢查询或者挂掉的时候会直接影响我们的系统。
+    所以对这些服务的执行状态进行合理的日志记录是很有必要的行为，也为了后续的报警做好铺垫
+
+外部服务
+
+    - rpc
+    - mysql
+    - redis
+    - mongo
+    - hbase
+
+通用的调用数据
+
+    - ip
+    - port
+    - action
+    - args
+
+通用的响应数据
+
+    - code
+    - status
+    - msg
+    - err_msg
+    - data
+
+不正常通信情况
+
+    - 连接半关闭
+    - 连接全关闭
+    - 通信超时
+
+调用情况
+- 调用成功，业务处理成功
+- 调用成功，业务处理失败
+- 超时，业务处理成功
+
+日志写的时机:
+
+    调用的服务处于不正常通信或者业务处理失败
+    调用的服务超过预期设定的执行时间
+    需要正向监控业务量级做同比分析 - 可选
+
+日志分类格式:
+结合“业务日志格式规范”，需要对category进行合理的设定，方面后续的查询和程序匹配
+例如:
+
+    调用失败，分类的命名如下：
+    Category: call_failure_redis_mutual
+    Category: call_failure_mysql_mutual
+    Category: call_failure_rpc_mutual
+    调用成功，业务返回code异常
+    Category: service_exception_rpc_mutual
+    Category: service_exception_redis_mutual
+    Category: service_exception_mysql_mutual
+
+
+日志的正文格式：
+    综合以上数据可得
+    Msg: ip:prot,action,err_msg

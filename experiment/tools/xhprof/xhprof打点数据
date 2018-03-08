@@ -1,0 +1,54 @@
+数据收集
+
+// xhprof打点频率,k=>v形式,可以随时修改
+
+if (当前URI的频率判断 && function_exists('xhprof_enable')) {
+    xhprof_enable(XHPROF_FLAGS_MEMORY|XHPROF_FLAGS_CPU);
+}
+
+register_shutdown_function(function () {
+    $uname = php_uname('n');
+    $time = time();
+    $xhprofData = xhprof_disable();
+    $log = array(
+        'REQUEST_URI' => parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
+        'HTTP_HOST'   => $uname,
+        'REQUEST_METHOD' => $_SERVER['REQUEST_METHOD'],
+        'REQUEST_TIME' => $time,
+        'xhprof_data' => $xhprofData,
+    );
+
+    // 压缩日志,查看是否安装了msgpack
+    $log = msgpack_pack($log);
+    $key = 'chan-xhprof-log';
+
+    $redis = new Redis();
+    $redis->connect('localhost',port);
+    $redis->publish($key, $log);
+});
+数据会按照pub-sub的方式存入redis中。
+
+落地 & 分析
+
+    启动一个常驻进程去订阅Redis
+    按业务分库，业务内按天分表。
+    进行业务的容量、qps评估。
+    具体怎么存按自己业务的规模来操作，规模小的话就放到一个表里面是OK的。
+
+
+建库 & 建表
+
+create database api_request;
+create table api_request_2018_02_27 (
+  id            INT(10) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  uri           VARCHAR(100),
+  time          INT(10),
+  wt            INT(10),
+  ct            INT(10),
+  mu            INT(10),
+  pmu           INT(10),
+  log           TEXT,
+  host          VARCHAR(30)
+);
+
+分析数据
