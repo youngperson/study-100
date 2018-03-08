@@ -1,0 +1,56 @@
+问题
+
+发现对于json的数据，经常会有
+
+{"tags":["_jsonparsefailure"],"@version":"1","@timestamp":"2018-03-07T11:40:28.759Z","path":"/data/wwwlogs/nginx-access.log","host":"vpc-qshz-web01","type":"nginx_access_log"}
+tags	       	_jsonparsefailure
+
+怀疑是客户端的logstash版本为2.x的原因，升级为最新版本的logstash
+
+
+
+============================================================================================
+
+安装
+    https://www.elastic.co/guide/en/logstash/current/installing-logstash.html#package-repositories
+
+    如果没有安装Java环境请安装 yum install java
+    # java -version
+    # rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    # vim /etc/yum.repos.d/logstash6.2.repo
+
+[logstash-6.x]
+name=Elastic repository for 6.x packages
+baseurl=https://artifacts.elastic.co/packages/6.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+
+
+    # yum install logstash
+
+
+安装新版本logstash，运行的时候报错Could not find logstash.yml
+mkdir -p /usr/share/logstash/config/
+chown -R logstash:logstash /usr/share/logstash/config/
+chown -R logstash:logstash /etc/logstash/
+ln -s /etc/logstash/* /usr/share/logstash/config
+
+
+脚本文件
+    创建目录放到此目录下面
+    # mkdir /etc/logstash/services
+============================================================================================
+
+启动
+    /usr/share/logstash/bin/logstash -f /etc/logstash/services/api_log.conf &
+    /usr/share/logstash/bin/logstash -f /etc/logstash/services/api_request.conf --path.data /var/log/logstash2 &
+    /usr/share/logstash/bin/logstash -f /etc/logstash/services/server.conf --path.data /var/log/logstash3 &
+
+============================================================================================
+
+json格式的问题好让人头大。升级后发现一只解决不了。
+调试：  client端往kafka中写并输出到屏幕     然后server端直接把kafka中的数据输出到屏幕
+        ctrl + z直接关掉进程
