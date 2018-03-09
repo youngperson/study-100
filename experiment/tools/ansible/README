@@ -39,12 +39,199 @@ openstack 有时候会因为rabbitmq造成通信队列的瓶颈。
 配置机器的列表(配置文件在/etc/ansible/下)
 # vim /ec/ansible/hosts
 
-[web]
-10.2.20.111
-10.2.20.112
+[es]
+10.111.11.139
 
-[common]
-10.2.20.1115
+[kafka]
+10.111.11.139
+10.111.11.140
+10.111.11.141
+
+[test]
+10.111.11.138
+
+========================================================================================
+
+练一练模块的使用
+
+1、setup
+    可以用来查看远程主机的一些基本信息：
+
+
+[root@qshz-analysis-3 ansible]# ansible -i ./hosts223  test -m setup
+10.111.11.138 | UNREACHABLE! => {
+    "changed": false,
+    "msg": "Failed to connect to the host via ssh: ssh: connect to host 10.111.11.138 port 22: Connection timed out\r\n",
+    "unreachable": true
+}
+
+[root@qshz-analysis-3 ansible]# ansible -i ./hosts223  es -m setup
+The authenticity of host '10.111.11.139 (10.111.11.139)' can't be established.
+ECDSA key fingerprint is SHA256:kjFn4ioN1EFisZsP0IJjnQZeE2R6KpntuPh1OKRwXp8.
+ECDSA key fingerprint is MD5:1a:0d:6b:55:61:21:cd:5f:46:69:00:ca:a5:56:f9:56.
+Are you sure you want to continue connecting (yes/no)? yes
+10.111.11.139 | UNREACHABLE! => {
+    "changed": false,
+    "msg": "Failed to connect to the host via ssh: Warning: Permanently added '10.111.11.139' (ECDSA) to the list of known hosts.\r\nPermission denied (publickey,gssapi-keyex,gssapi-with-mic).\r\n",
+    "unreachable": true
+}
+
+上面表示ssh还没通，-i 指定hosts的文件。找一台控制机器，和其它机器是免ssh的
+
+-i 指定hosts文件  es表示hosts文件中的机器组名  -m 是参数后面跟上用什么模块
+[root@vpc-qshz-ops01 ansible]# ansible -i /etc/ansible/hosts-test  es -m setup
+
+
+2、ping
+    测试远程主机的运行状态
+
+[root@vpc-qshz-ops01 ansible]# ansible -i /etc/ansible/hosts-test  kafka -m ping
+10.111.11.140 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+10.111.11.139 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+10.111.11.141 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+
+[root@vpc-qshz-ops01 ansible]# ansible -i /etc/ansible/hosts-test  test -m ping
+10.111.11.138 | UNREACHABLE! => {
+    "changed": false,
+    "msg": "Failed to connect to the host via ssh: ssh: connect to host 10.111.11.138 port 22: Connection timed out\r\n",
+    "unreachable": true
+}
+
+3、copy
+    复制文件到远程机器
+
+[root@vpc-qshz-ops01 ansible]# ansible -i /etc/ansible/hosts-test kafka -m copy -a "src=/etc/ansible/conf/test.conf dest=/tmp/test.log owner=root group=root mode=0644"
+10.111.11.140 | SUCCESS => {
+    "changed": true,
+    "checksum": "2b3fd50989d68ff5fb8b61951fb639ee331b1a03",
+    "dest": "/tmp/test.log",
+    "gid": 0,
+    "group": "root",
+    "md5sum": "ca27cff9131f5c57d5c79f9a606bdb4d",
+    "mode": "0644",
+    "owner": "root",
+    "size": 11,
+    "src": "/root/.ansible/tmp/ansible-tmp-1520408781.48-178658332374945/source",
+    "state": "file",
+    "uid": 0
+}
+10.111.11.141 | SUCCESS => {
+    "changed": true,
+    "checksum": "2b3fd50989d68ff5fb8b61951fb639ee331b1a03",
+    "dest": "/tmp/test.log",
+    "gid": 0,
+    "group": "root",
+    "md5sum": "ca27cff9131f5c57d5c79f9a606bdb4d",
+    "mode": "0644",
+    "owner": "root",
+    "size": 11,
+    "src": "/root/.ansible/tmp/ansible-tmp-1520408781.49-147043087142175/source",
+    "state": "file",
+    "uid": 0
+}
+10.111.11.139 | SUCCESS => {
+    "changed": true,
+    "checksum": "2b3fd50989d68ff5fb8b61951fb639ee331b1a03",
+    "dest": "/tmp/test.log",
+    "gid": 0,
+    "group": "root",
+    "md5sum": "ca27cff9131f5c57d5c79f9a606bdb4d",
+    "mode": "0644",
+    "owner": "root",
+    "size": 11,
+    "src": "/root/.ansible/tmp/ansible-tmp-1520408781.47-171870935487537/source",
+    "state": "file",
+    "uid": 0
+}
+
+4、shell
+    在远程主机上执行命令,支持使用管道符的命令(启动服务等)
+
+[root@vpc-qshz-ops01 ansible]# ansible -i /etc/ansible/hosts-test  kafka -m shell -a "ps -ef | grep redis"
+10.111.11.139 | SUCCESS | rc=0 >>
+root     12069 12068  0 11:13 pts/0    00:00:00 /bin/sh -c ps -ef | grep redis
+root     12071 12069  0 11:13 pts/0    00:00:00 grep redis
+root     14749     1  0 3月06 ?       00:02:56 redis-server 10.111.11.139:7000 [cluster]
+root     31285     1  0 3月05 ?       00:04:36 redis-server 10.111.11.139:7001 [cluster]
+root     31291     1  0 3月05 ?       00:03:44 redis-server 10.111.11.139:7002 [cluster]
+
+10.111.11.140 | SUCCESS | rc=0 >>
+root     22672     1  0 3月05 ?       00:04:38 redis-server 10.111.11.140:7000 [cluster]
+root     22677     1  0 3月05 ?       00:04:51 redis-server 10.111.11.140:7001 [cluster]
+root     22682     1  0 3月05 ?       00:04:24 redis-server 10.111.11.140:7002 [cluster]
+root     23970 23969  0 11:13 pts/0    00:00:00 /bin/sh -c ps -ef | grep redis
+root     23972 23970  0 11:13 pts/0    00:00:00 grep redis
+
+10.111.11.141 | SUCCESS | rc=0 >>
+root     24354     1  0 3月05 ?       00:04:08 redis-server 10.111.11.141:7000 [cluster]
+root     24362     1  0 3月05 ?       00:04:31 redis-server 10.111.11.141:7001 [cluster]
+root     24367     1  0 3月05 ?       00:03:56 redis-server 10.111.11.141:7002 [cluster]
+root     25534 25533  0 11:13 pts/0    00:00:00 /bin/sh -c ps -ef | grep redis
+root     25536 25534  0 11:13 pts/0    00:00:00 grep redis
+
+
+5、cron
+    在远程主机上操作定时任务,只要name不一样每次操作都会去追加一条定时任务
+
+    每一分钟执行一次job
+[root@vpc-qshz-ops01 ansible]# ansible -i /etc/ansible/hosts-test es -m cron -a 'backup="True" name="对任务的描述" minute="1" job="ls -a > /dev/null"'
+10.111.11.139 | SUCCESS => {
+    "backup_file": "/tmp/crontabsMR4Xm",
+    "changed": true,
+    "envs": [],
+    "jobs": [
+        "对任务的描述"
+    ]
+}
+
+[root@qshz-analysis-3 ~]# crontab -e
+#Ansible: 对任务的描述
+1 * * * * ls -a > /dev/null
+#Ansible: 你好啊
+1 * * * * ls  > /dev/null
+
+
+根据name去删除定时任务（state=absent）
+[root@vpc-qshz-ops01 ansible]# ansible -i /etc/ansible/hosts-test es -m cron -a 'state=absent name=对任务的描述'
+10.111.11.139 | SUCCESS => {
+    "changed": true,
+    "envs": [],
+    "jobs": [
+        "你好啊"
+    ]
+}
+
+
+6、yum
+    使用yum包管理器来管理软件包
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
