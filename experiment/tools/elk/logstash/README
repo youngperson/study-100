@@ -1,3 +1,23 @@
+安装2.x
+
+    如果没有安装Java环境请安装 yum install java
+    # java -version
+    # rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    # vim /etc/yum.repos.d/logstash.repo
+
+[logstash-2.3]
+name=Logstash repository for 2.3.x packages
+baseurl=https://packages.elastic.co/logstash/2.3/centos
+gpgcheck=1
+gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+
+
+    # yum install logstash
+    # /opt/logstash/bin/logstash -f /etc/logstash/conf.d/xxxx
+
+=================================
+
 安装新版本logstash，运行的时候报错Could not find logstash.yml
 mkdir -p /usr/share/logstash/config/
 chown -R logstash:logstash /usr/share/logstash/config/
