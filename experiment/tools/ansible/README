@@ -213,70 +213,53 @@ root     25536 25534  0 11:13 pts/0    00:00:00 grep redis
 
 6、yum
     使用yum包管理器来管理软件包
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-下面的test表示的是hosts配置中的分组名称
-列出文件列表
-# ansible test -a "ls "
-
-测试机器的连通性
-# ansible test -m ping
-
-执行远程命令
-# ansible test -m command -a 'uptime'
-
-执行主控端脚本
-# ansible test -m script -a '/etc/ansible/script/test.sh'
-
-执行远程主机脚本
-# ansible test -m shell -a 'ps aux|grep zabbix'
-
-类似shell
-# ansible test -m raw -a "ps aux|grep zabbix|awk '{print \$2}'"
-
-创建软链接
-# ansible test -m file -a "src=/etc/resolv.conf dest=/tmp/resolv.conf state=link"
-
-删除软链接
-# ansible test -m file -a "path=/tmp/resolv.conf state=absent"
-
-复制文件到远程服务器
-[root@vpc-qshz-ops01 ansible]# ansible common -m copy -a "src=/etc/ansible/input_file_output_kafka_all.conf dest=/etc/logstash/conf.d/input_file_output_kafka_all.conf owner=root group=root mode=0644"
-# ansible test -m copy -a "src=/etc/ansible/ansible.cfg dest=/tmp/ansible.cfg owner=root group=root mode=0644"
-
-
-ansible常用模块
+更多请参考
 http://blog.csdn.net/wanghailong041/article/details/45770359
 http://blog.csdn.net/asd1992498/article/details/53887870
 
-======================
+========================================================================================
 
-四、ansible playbook
+ansible playbook
 
 Playbook是一种与adhoc任务执行模式完全不同的方式，而且特别强大。
 简单地说，Playbooks是一个非常简单的配置管理和多机器部署系统的基础，不同于任何已经存在的配置系统，而且非常适合部署复杂应用程序。
 
-
 yml语法：yml是一种比较精简的语法结构，通过空格来控制层级。
 
-https://juejin.im/post/59decdb9518825422c0ca44c
+1、使用playbook写个hello Word
+
+[root@vpc-qshz-ops01 ansible]# vim /etc/ansible/playbook/hello.yaml
+- hosts: es
+  tasks:
+    - name: say hello task
+      shell: echo hello world `date` by `hostname` > /tmp/hello.log
+
+
+[root@vpc-qshz-ops01 ansible]# ansible-playbook -i /etc/ansible/hosts-test /etc/ansible/playbook/hello.yaml
+
+[root@qshz-analysis-3 ~]# cat /tmp/hello.log
+hello world 2018年 03月 12日 星期一 18:36:41 CST by qshz-analysis-3
+
+2、copy文件
+[root@vpc-qshz-ops01 ansible]# vim /etc/ansible/playbook/copy.yaml
+- hosts: es
+  tasks:
+    - name: echo date
+      command: /bin/date
+    - name: copy conf to /tmp
+      copy: src=/etc/ansible/conf/test.conf dest=/tmp
+
+[root@vpc-qshz-ops01 ansible]# ansible-playbook -i /etc/ansible/hosts-test /etc/ansible/playbook/copy.yaml
+
+[root@qshz-analysis-3 ~]# cat /tmp/test.conf
+我是配置文件数据
+
+========================================================================================
+
+ansible的playbook在控制机器中配合定时任务去使用
+
+[root@cli ~]# crontab  -l
+
+#Ansible
+15 00 * * * /usr/bin/ansible-playbook /data/playbook/memery-leak.yml
+*/30 * * * * /usr/bin/ansible-playbook /data/playbook/clean.yml

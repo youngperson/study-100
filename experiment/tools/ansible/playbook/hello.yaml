@@ -1,0 +1,4 @@
+- hosts: es
+  tasks:
+    - name: say hello task
+      shell: echo hello world `date` by `hostname` > /tmp/hello.log

@@ -1,0 +1,11 @@
+- name: release ebao-api
+  hosts: ebao-api
+  user: root
+  gather_facts: false
+  vars:
+  - user: "root"
+  tasks:
+  - name: restart php fpm
+    command: systemctl restart php-fpm.service
+  - name: restart nginx
+    command: systemctl restart nginx.service

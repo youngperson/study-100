@@ -1,0 +1,13 @@
+- name: clean service logs
+  hosts: service-live
+  user: root
+  gather_facts: false
+  vars:
+  - user: "root"
+  tasks:
+  - name: clean mutual log
+    command: find /data/wwwlogs/service-logs/mutual/ -mtime +0 -name "*.log" -exec rm -rf {} \;
+  - name: clean checkin log
+    command: find /data/wwwlogs/service-logs/checkin/ -mtime +0 -name "*.log" -exec rm -rf {} \;
+  - name: clean diagnose log
+    command: find /data/wwwlogs/service-logs/diagnose/ -mtime +0 -name "*.log" -exec rm -rf {} \;

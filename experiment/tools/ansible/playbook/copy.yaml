@@ -1,0 +1,6 @@
+- hosts: es
+  tasks:
+    - name: echo date
+      command: /bin/date
+    - name: copy conf to /tmp
+      copy: src=/etc/ansible/conf/test.conf dest=/tmp

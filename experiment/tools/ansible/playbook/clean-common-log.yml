@@ -1,0 +1,9 @@
+- name: clean service logs
+  hosts: common-live
+  user: root
+  gather_facts: false
+  vars:
+  - user: "root"
+  tasks:
+  - name: clean common log
+    command: find /data/wwwlogs/service-logs/common/ -mtime +0 -name "*.log" -exec rm -rf {} \;

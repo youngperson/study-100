@@ -1,0 +1,9 @@
+- name: clean server request log
+  hosts: ebao-api
+  user: root
+  gather_facts: false
+  vars:
+  - user: "root"
+  tasks:
+  - name: job
+    shell: "echo '' > /data/wwwlogs/php-api-request.log"
