@@ -1,0 +1,24 @@
+- 版本
+	- Jenkins ver. 2.60.3
+	- 安装官方教程部署好Jenkins https://jenkins.io/download/
+
+- 应用
+	- 结合jitlab做持续集成、持续部署的事情
+	- 在gitlab中的每个项目的特定目录下面会放置好docker file文件
+	- 每个项目一开始会在Jenkins中对应一个job
+	- 每个job我们对它进行多次的build，根据branch生成不同的docker_image
+	- 然后就是把这个docker_image部署到k8s中去
+
+- API
+	- 这些api就是替代了Jenkins的图形化操作
+	- Jenkins部署好后的域名我们叫做  https://jenkins.xxx.com
+
+- job build
+
+- job create
+
+- last build info
+
+- buil log
+
+
