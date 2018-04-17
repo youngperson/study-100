@@ -1,0 +1,41 @@
+- Api请求的规范
+	- get：对于获取资源的，用get。如果是搜索的传参较多用post
+	- post：修改变更数据的、表单、有敏感数据的用post
+	- request：获取数据流的
+
+
+- statuc code的规范
+
+**参考**
+
+	http://xiaochutian.github.io/2017/08/01/design-of-server-status-code-1/
+
+**返回统一格式**
+
+| 编号  | 属性  | 说明  |
+| ------------ | ------------ | ------------ |
+|  1 |code|状态码(0表示OK)  |
+|  2 |msg|状态码对应的解释  |
+|  3 |data|返回的数据  |
+
+
+
+	{
+		"msg": "success", 
+		"code": 0, 
+		"data": [
+			{
+				"type": 1, 
+				"date": "2017-06-23", 
+				"rightCount": 15, 
+				"wrongCount": 6, 
+				"duration": 300
+			}
+		]
+	}
+
+
+**不关心状态码**
+
+	非0都是有问题的，详情可以看后端返回的msg字段
+
