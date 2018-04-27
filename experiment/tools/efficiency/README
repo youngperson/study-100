@@ -8,8 +8,13 @@
 - 接口管理
     - postman
     - swagger 
+        - swagger我的理解是不是这样，我按照它的要求在代码中写好注释。   
+        - 然后就会得到个.json的文件    
+        - 我把这个文件在swagger的UI中输出，就能对我的接口进行查看，请求调试了
 
 - 编辑器
     - vscode
     - phpstorm
     
+- Git
+    - source tree

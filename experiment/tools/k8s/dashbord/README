@@ -1,0 +1,6 @@
+
+
+- 说明
+    kubernetes仪表板是用于kubernetes集群的通用基于web的ui。它允许用户管理在集群中运行的应用程序并对其进行故障排除，并管理集群本身。
+
+https://github.com/kubernetes/dashboard

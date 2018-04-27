@@ -1,0 +1,29 @@
+- 问题
+    (index):32 WebSocket connection to 'ws://xxx.com/ws' failed: Error during WebSocket handshake: Unexpected response code: 400
+
+server {
+    listen       80;
+    server_name  xxx.com;
+    charset UTF-8;
+
+    include forb.conf;
+
+    location / {
+        root /data/wwwroot/chonsWebsocket;
+        index home.html index.html;
+        proxy_pass                       http://127.0.0.1:8081;
+        proxy_read_timeout               900;
+        # 加上以下2个解决Nginx代理的问题
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+- 问题
+    WebSocket connection to 'ws://xxxcom/ws' failed: Error during WebSocket handshake: Unexpected response code: 403
+    2018/04/27 10:50:04 upgrade: websocket: request origin not allowed by Upgrader.CheckOrigin
+
+    在代码中加入
+    var upgrader = websocket.Upgrader{
+            CheckOrigin:       func(r *http.Request) bool { return true },
+    }
