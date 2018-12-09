@@ -1,0 +1,43 @@
+安装地址：https://www.gitlab.com.cn/installation/
+安装和配置的详细说明：https://docs.gitlab.com/omnibus/README.html#installation-and-configuration-using-omnibus-package
+
+
+环境：当前的环境是centos7
+
+说明：推荐承载GitLab运行的服务器至少分配4GB的内存给GitLab
+
+
+1、安装并配置必要的依赖关系
+    sudo yum install -y curl policycoreutils-python openssh-server
+    sudo systemctl enable sshd
+    sudo systemctl start sshd
+
+    sudo firewall-cmd --permanent --add-service=http
+    sudo systemctl reload firewalld
+
+
+2、添加GitLab软件包存储库并安装软件包
+    curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | sudo bash
+
+   安装GitLab包。将`http：// gitlab.example.com`更改为您要访问GitLab实例的URL
+    sudo EXTERNAL_URL="http://gitlab1021.com" yum install -y gitlab-ee
+
+3、浏览到主机名并登录
+    首次访问时，您将被重定向到密码重置屏幕。提供初始管理员帐户的密码，您将被重定向回登录屏幕。使用默认帐户的用户名root登录
+    (如果是在虚拟中搭建的测试,打开network调试。直接去访问http://gitlab1021.com/users/password/edit,或者直接ip访问)
+
+4、文档中有提到重启和关闭的命令
+
+    # Start all GitLab components
+    sudo gitlab-ctl start
+
+    # Stop all GitLab components
+    sudo gitlab-ctl stop
+
+    # Restart all GitLab components
+    sudo gitlab-ctl restart
+
+
+
+
+配置邮箱https://docs.gitlab.com/omnibus/settings/smtp.html
