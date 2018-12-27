@@ -1,0 +1,46 @@
+- 1、下载镜像
+- docker pull docker.elastic.co/elasticsearch/elasticsearch:6.5.3
+
+- 2、先run起来
+- docker run -d -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.5.3
+
+
+- 3、目录映射
+- 需要映射目录的，可以先跑起来进去看看需要映射那些目录
+- 宿主机上提前创建好目录和文件
+- 注意宿主机的文件权限问题
+- 使用 docker logs containerid 排查错误
+- 注意文件的话提前准备好内容
+- docker run -v /usr/share/elasticsearch/data:/usr/share/elasticsearch/data -v /usr/share/elasticsearch/logs:/usr/share/elasticsearch/logs -v /usr/share/elasticsearch/config/es.yml:/usr/share/elasticsearch/config/elasticsearch.yml -d -p 9200:9200 -p 9300:9300   -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.5.3
+
+
+- http://websocket.luojilab.com/es/cerebro/#/overview?host=http:%2F%2F192.168.69.62:9200
+
+nginx反向代码支持一个域名一个端口，根据不同的location进行代理。注意加上/结尾
+
+server {
+    listen       80;
+    server_name  websocket.luojilab.com;
+    charset UTF-8;
+
+    # location这里加上/和proxy_pass加上/ 表示不进行处理
+    location /es/cerebro/ {
+        root /;
+	proxy_pass                       http://127.0.0.1:9000/;
+        proxy_redirect  off;
+	proxy_read_timeout               900;
+        proxy_set_header  X-Real-IP  $remote_addr;
+        proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+
+// ==============
+- 1、下载镜像
+- docker pull docker.elastic.co/kibana/kibana:6.5.4
+
+- 2、先run起来看看
+- docker run -d  docker.elastic.co/kibana/kibana:6.5.4
+
+- 3、映射目录和端口
+- docker run -v /usr/share/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml -d -p 5601:5601 docker.elastic.co/kibana/kibana:6.5.4
+
