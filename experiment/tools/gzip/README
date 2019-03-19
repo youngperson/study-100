@@ -1,3 +1,5 @@
 对于文章内容，进行压缩后放到Redis等缓存中,利用go自带的gzip
 
+对比下github.com/vmihailenco/msgpack,msgpack有更好的性能
+
 - 参考：https://www.cnblogs.com/xingxueliao/p/3984567.html
