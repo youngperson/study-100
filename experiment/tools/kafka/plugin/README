@@ -31,3 +31,7 @@ javac is not installed in the java version.
 java -version  1.8.0_161-b14
 yum search java | grep -i --color JDK
 yum install java-1.8.0-openjdk  java-1.8.0-openjdk-devel
+
+# 坑
+1、kafka集群必须是奇数个节点组成集群
+2、重新改了配置文件，尤其是kafka的broker.id的值，一定记得把目录下面的数据全部清空在重启zk  kafka
